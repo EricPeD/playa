@@ -1,0 +1,301 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Category, Product, CartItem } from '@/lib/types';
+import { fetchCategories, fetchProductsByCategory, requestGPS } from '@/lib/helpers';
+import { IcoBack, IcoBox, IcoCart, IcoDrink, IcoWine, IcoSandwich, IcoCookie, IcoIceCream, IcoCigarette, IcoPill, IcoSun, IcoGift, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin  } from './components/icons';
+import CategoryModal from "@/app/components/CategoryModal"
+import { CAT_COLORS, CAT_ICONS } from './components/colors';
+import { CartModal } from './components/CartModal';
+
+
+
+// ─── HomePage ─────────────────────────────────────────────────────────────────
+
+export default function HomePage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCats, setLoadingCats] = useState(true);
+  const [catsError, setCatsError] = useState<string | null>(null);
+
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [gpsData, setGpsData] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  const [orderDone, setOrderDone] = useState(false);
+
+  console.log('[HomePage] Render — cats:', categories.length, '| cart:', cart.length, '| gps:', gpsEnabled);
+
+  // Cargar categorías
+  useEffect(() => {
+    console.log('[HomePage] useEffect mount — cargando categorías');
+    setLoadingCats(true);
+    setCatsError(null);
+
+    fetchCategories()
+      .then((data) => {
+        console.log('[HomePage] Categorías OK:', data.length, data.map((c) => `${c.name}(${c.id})`));
+        setCategories(data);
+        setLoadingCats(false);
+      })
+      .catch((err: unknown) => {
+        console.error('[HomePage] Error inesperado:', err);
+        setCatsError('Error al conectar con la base de datos.');
+        setLoadingCats(false);
+      });
+  }, []);
+
+  // Cart actions
+  const addToCart = useCallback((product: Product) => {
+    console.log('[Cart] addToCart:', product.name, `(id=${product.id})`);
+    setCart((prev) => {
+      const existing = prev.find((i) => i.product.id === product.id);
+      const next = existing
+        ? prev.map((i) => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i)
+        : [...prev, { product, quantity: 1 }];
+      console.log('[Cart] nuevo estado:', next.map((i) => `${i.product.name}x${i.quantity}`).join(', '));
+      return next;
+    });
+  }, []);
+
+  const removeFromCart = useCallback((productId: number) => {
+    console.log('[Cart] removeFromCart id:', productId);
+    setCart((prev) => {
+      const existing = prev.find((i) => i.product.id === productId);
+      if (!existing) {
+        console.warn('[Cart] id no encontrado en carrito:', productId);
+        return prev;
+      }
+      const next = existing.quantity === 1
+        ? prev.filter((i) => i.product.id !== productId)
+        : prev.map((i) => i.product.id === productId ? { ...i, quantity: i.quantity - 1 } : i);
+      console.log('[Cart] nuevo estado:', next.map((i) => `${i.product.name}x${i.quantity}`).join(', '));
+      return next;
+    });
+  }, []);
+
+  // GPS
+  const handleGps = useCallback(() => {
+    console.log('[HomePage] handleGps — estado actual:', gpsEnabled);
+    setGpsError(null);
+    requestGPS(
+      (coords) => {
+        console.log('[HomePage] GPS activado. Coords:', coords.latitude, coords.longitude);
+        setGpsEnabled(true);
+        setGpsData({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+      },
+      (msg) => {
+        console.error('[HomePage] GPS error:', msg);
+        setGpsError(msg);
+        setGpsEnabled(false);
+      },
+    );
+  }, [gpsEnabled]);
+
+  // Place order
+  const handlePlaceOrder = useCallback(async () => {
+    const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+    console.group('[Order] Creando pedido');
+    console.log('Items:', cart.map((i) => `${i.product.name} x${i.quantity}`));
+    console.log('Total:', total.toFixed(2), '€');
+    console.log('GPS activo:', gpsEnabled);
+
+    // TODO: insertar en Supabase
+    // const { data, error } = await supabase.from('orders').insert({
+    //   status: 'pending',
+    //   subtotal: total,
+    //   total: total,
+    //   payment_method: 'bizum',
+    // });
+    // console.log('Supabase order result:', data, error);
+
+    console.log('Pedido enviado (simulado). Limpiando estado...');
+    console.groupEnd();
+
+    setCart([]);
+    setCartOpen(false);
+    setOrderDone(true);
+    setTimeout(() => setOrderDone(false), 4000);
+  }, [cart, gpsEnabled]);
+ 
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const cartTotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+
+
+  useEffect(() => {
+  console.log("gpsData actualizado:", gpsData);
+  }, [gpsData]);
+
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8] flex flex-col max-w-md mx-auto relative">
+
+      {/* ── Header ── */}
+      <header className="px-5 pt-8 pb-5">
+        <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-[0.25em]">
+          Playa Delivery
+        </p>
+        <h1 className="text-[30px] font-black text-[#1A1A1A] leading-[1.1] mt-1.5">
+          ¿Qué te<br />pedimos hoy?
+        </h1>
+        <p className="text-[13px] text-[#9B9589] mt-1.5 leading-snug">
+          Elige categoría · te lo llevamos a la sombrilla.
+        </p>
+      </header>
+
+      {/* ── Categorías ── */}
+      <main className="flex-1 px-4 pb-28">
+
+        {/* Error */}
+        {catsError && (
+          <div className="rounded-2xl bg-[#FEF2F2] border border-[#FECACA] p-4 mb-4">
+            <p className="text-[14px] font-semibold text-[#DC2626]">Error al cargar categorías</p>
+            <p className="text-[12px] text-[#9B9589] mt-1">{catsError}</p>
+            <p className="text-[11px] text-[#9B9589] mt-2">
+              Abre F12 → Consola para ver los logs de Supabase.
+            </p>
+          </div>
+        )}
+
+        {/* Skeleton */}
+        {loadingCats && (
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-[120px] rounded-3xl bg-[#EDEBE6] animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {/* Grid */}
+        {!loadingCats && categories.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {categories.map((cat) => {
+              const colors = CAT_COLORS[cat.slug] ?? { bg: '#F5F2ED', text: '#1A1A1A', icon: '#888' };
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    console.log(`[HomePage] Categoría pulsada: ${cat.name} (slug=${cat.slug}, id=${cat.id})`);
+                    setSelectedCategory(cat);
+                  }}
+                  className="rounded-3xl p-4 flex flex-col justify-between h-[120px] text-left active:scale-[0.96] transition-transform"
+                  style={{ backgroundColor: colors.bg }}
+                >
+                  <span style={{ color: colors.icon }}>
+                    {CAT_ICONS[cat.slug] ?? <IcoBox />}
+                  </span>
+                  <div>
+                    <p className="text-[15px] font-bold leading-tight" style={{ color: colors.text }}>
+                      {cat.name}
+                    </p>
+                    {cat.description && (
+                      <p
+                        className="text-[11px] mt-0.5 leading-snug line-clamp-1"
+                        style={{ color: colors.text, opacity: 0.6 }}
+                      >
+                        {cat.description}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loadingCats && !catsError && categories.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-[#D0CCC5] p-8 text-center mt-2">
+            <p className="text-[15px] font-semibold text-[#1A1A1A]">Sin categorías</p>
+            <p className="text-[13px] text-[#9B9589] mt-1">
+              El SQL devolvió 0 filas. Revisa que se ejecutó en Supabase y que RLS permite lectura anónima.
+            </p>
+            <p className="text-[11px] text-[#C0BDB8] mt-2">
+              Abre F12 → Consola para ver los detalles del error.
+            </p>
+          </div>
+        )}
+      </main>
+
+      {/* ── Toast pedido OK ── */}
+      {orderDone && (
+        <div className="fixed top-4 left-4 right-4 max-w-md mx-auto z-[60]">
+          <div className="bg-[#1A1A1A] text-white rounded-2xl px-5 py-4 flex items-center gap-3">
+            <span className="text-[#4ADE80]"><IcoCheck size={22} /></span>
+            <div>
+              <p className="text-[15px] font-semibold">Pedido recibido</p>
+              <p className="text-[12px] text-white/50">En camino a tu sombrilla.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bottom nav ── */}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 px-3 pb-4 pt-1.5">
+        <div className="bg-white rounded-3xl border border-[#E8E5E0] px-2.5 py-2 flex gap-2">
+
+          {/* GPS */}
+          <button
+            onClick={() => { console.log('[BottomNav] GPS pulsado'); handleGps(); }}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl text-[13px] font-semibold transition-all active:scale-95 ${
+              gpsEnabled ? 'bg-[#F0FFF4] text-[#16A34A]' : 'bg-[#F5F2ED] text-[#1A1A1A]'
+            }`}
+          >
+            {gpsEnabled ? <IcoPin size={17} /> : <IcoPinOff size={17} />}
+            <span>{gpsEnabled ? 'Ubicado' : 'Ubicación'}</span>
+          </button>
+
+          {/* Cart */}
+          <button
+            onClick={() => { console.log('[BottomNav] Carrito pulsado. items:', cartCount); setCartOpen(true); }}
+            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#1A1A1A] text-white text-[13px] font-semibold active:scale-95 transition-transform relative"
+          >
+            <IcoCart size={17} />
+            <span>{cartCount > 0 ? `${cartTotal.toFixed(2)} €` : 'Carrito'}</span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1 w-5 h-5 bg-[#E65100] text-white text-[11px] font-bold rounded-full flex items-center justify-center tabular-nums">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {gpsError && (
+          <p className="text-[11px] text-[#DC2626] text-center mt-1.5 px-2 leading-snug">{gpsError}</p>
+        )}
+      </nav>
+
+      {/* ── Modales ── */}
+      {selectedCategory && (
+        <CategoryModal
+          category={selectedCategory}
+          onClose={() => { console.log(`[HomePage] Cerrando modal cat: ${selectedCategory.name}`); setSelectedCategory(null); }}
+          cart={cart}
+          onAdd={addToCart}
+          onRemove={removeFromCart}
+        />
+      )}
+
+      {cartOpen && (
+        <CartModal
+          cart={cart}
+          onClose={() => { console.log('[HomePage] Cerrando carrito'); setCartOpen(false); }}
+          gpsEnabled={gpsEnabled}
+          gpsError={gpsError}
+          onRequestGps={handleGps}
+          onPlaceOrder={handlePlaceOrder}
+          onAdd={addToCart}
+          onRemove={removeFromCart}
+          gpsData={gpsData}
+        />
+      )}
+    </div>
+  );
+}
