@@ -3,6 +3,7 @@ import { CartItem, Product, CreateOrderPayload } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { COUNTRY_CODES } from '@/lib/country';
 import { PhoneModal } from './PhoneModal';
+import { CheckoutModal } from './CheckoutModal';
 import { submitOrder } from '@/lib/orders';
 
 // ── CartModal ──────────────────────────────────────────────────────────────────
@@ -36,6 +37,8 @@ export function CartModal({
   const [notes, setNotes]                 = useState('');
   const [submitting, setSubmitting]       = useState(false);
   const [submitError, setSubmitError]     = useState<string | null>(null);
+  const [showCheckout, setShowCheckout]   = useState(false);
+  const [checkoutOrderId, setCheckoutOrderId] = useState<number | null>(null);
 
   const canOrder = gpsEnabled && phoneConfirmed && !submitting;
 
@@ -87,7 +90,8 @@ export function CartModal({
 
     if (result.success && result.orderId) {
       console.log('[CartModal] ✅ Pedido creado con id:', result.orderId);
-      onPlaceOrder(result.orderId);
+      setCheckoutOrderId(result.orderId);
+      setShowCheckout(true);
     } else {
       console.error('[CartModal] ❌ Error al crear pedido:', result.error);
       setSubmitError(result.error ?? 'Error desconocido');
@@ -294,6 +298,22 @@ export function CartModal({
             setCountry(savedCountry);
             setPhoneConfirmed(true);
             setPhoneModal(false);
+          }}
+        />
+      )}
+
+      {showCheckout && checkoutOrderId !== null && (
+        <CheckoutModal
+          orderId={checkoutOrderId}
+          total={total}
+          onSuccess={(orderId) => {
+            console.log('[CartModal] Pago completado para orderId:', orderId);
+            setShowCheckout(false);
+            onPlaceOrder(orderId);
+          }}
+          onClose={() => {
+            console.log('[CartModal] Checkout cerrado');
+            setShowCheckout(false);
           }}
         />
       )}

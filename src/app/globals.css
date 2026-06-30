@@ -13,3 +13,20 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.stripe-element {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.stripe-element iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.stripe-element input,
+.stripe-element .StripeElement,
+.stripe-element .__PrivateStripeElement {
+  width: 100% !important;
+}

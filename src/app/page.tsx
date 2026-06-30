@@ -100,23 +100,15 @@ export default function HomePage() {
   }, [gpsEnabled]);
 
   // Place order
-  const handlePlaceOrder = useCallback(async () => {
+  const handlePlaceOrder = useCallback(async (orderId?: number) => {
     const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
-    console.group('[Order] Creando pedido');
+    console.group('[Order] Confirmación de pedido');
+    console.log('orderId:', orderId ?? 'sin id');
     console.log('Items:', cart.map((i) => `${i.product.name} x${i.quantity}`));
     console.log('Total:', total.toFixed(2), '€');
     console.log('GPS activo:', gpsEnabled);
 
-    // TODO: insertar en Supabase
-    // const { data, error } = await supabase.from('orders').insert({
-    //   status: 'pending',
-    //   subtotal: total,
-    //   total: total,
-    //   payment_method: 'bizum',
-    // });
-    // console.log('Supabase order result:', data, error);
-
-    console.log('Pedido enviado (simulado). Limpiando estado...');
+    console.log('Pedido confirmado. Limpiando estado...');
     console.groupEnd();
 
     setCart([]);
