@@ -1,10 +1,11 @@
-import { IcoPhone, IcoBack, IcoCart, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin } from './icons';
+import { IcoPhone, IcoBack, IcoCart, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin } from './Icons';
 import { CartItem, Product, CreateOrderPayload } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { COUNTRY_CODES } from '@/lib/country';
 import { PhoneModal } from './PhoneModal';
 import { CheckoutModal } from './CheckoutModal';
 import { submitOrder } from '@/lib/orders';
+import { getUiText, type SupportedLanguage } from '@/lib/i18n';
 
 // ── CartModal ──────────────────────────────────────────────────────────────────
 export function CartModal({
@@ -17,6 +18,7 @@ export function CartModal({
   onPlaceOrder,
   onAdd,
   onRemove,
+  language,
 }: {
   gpsData: { latitude: number; longitude: number } | null;
   cart: CartItem[];
@@ -27,8 +29,10 @@ export function CartModal({
   onPlaceOrder: (orderId: number) => void;
   onAdd: (p: Product) => void;
   onRemove: (id: number) => void;
+  language: SupportedLanguage;
 }) {
   const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+  const t = (key: string) => getUiText(language, key);
 
   const [phone, setPhone]                 = useState('');
   const [country, setCountry]             = useState(COUNTRY_CODES[0]);
@@ -116,8 +120,8 @@ export function CartModal({
             <IcoCart size={18} />
           </div>
           <div>
-            <p className="text-[10px] text-[#9B9589] uppercase tracking-widest">Tu pedido</p>
-            <h2 className="text-[17px] font-bold text-[#1A1A1A]">Carrito</h2>
+            <p className="text-[10px] text-[#9B9589] uppercase tracking-widest">{t('cartModalHeaderTitle')}</p>
+            <h2 className="text-[17px] font-bold text-[#1A1A1A]">{t('cartModalHeaderSubtitle')}</h2>
           </div>
         </div>
 
@@ -126,7 +130,7 @@ export function CartModal({
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 gap-3 text-center">
               <div className="text-[#D0CCC5]"><IcoCart size={34} /></div>
-              <p className="text-[15px] text-[#9B9589]">Tu carrito está vacío.</p>
+              <p className="text-[15px] text-[#9B9589]">{t('cartModalEmpty')}</p>
             </div>
           ) : (
             <>
@@ -162,7 +166,7 @@ export function CartModal({
 
                 {/* Total */}
                 <div className="flex justify-between items-center py-4">
-                  <p className="text-[14px] text-[#9B9589]">Total</p>
+                  <p className="text-[14px] text-[#9B9589]">{t('cartModalTotal')}</p>
                   <p className="text-[24px] font-black text-[#1A1A1A] tabular-nums">{total.toFixed(2)} €</p>
                 </div>
               </div>
@@ -170,12 +174,12 @@ export function CartModal({
               {/* ── Notes ── */}
               <div className="mb-3">
                 <label className="block text-[12px] font-semibold text-[#9B9589] uppercase tracking-widest mb-1.5 px-1">
-                  Notas <span className="font-normal normal-case tracking-normal">(opcional)</span>
+                  {t('cartModalNotesLabel')} <span className="font-normal normal-case tracking-normal">({t('cartModalNotesLabel').toLowerCase() === 'notas' ? 'opcional' : 'optional'})</span>
                 </label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Sin gluten, alergia a frutos secos, dejar en sombrilla azul…"
+                  placeholder={t('cartModalNotesPlaceholder')}
                   maxLength={280}
                   rows={3}
                   className="w-full rounded-2xl border border-[#E0DDD8] bg-white px-4 py-3 text-[14px] text-[#1A1A1A] placeholder:text-[#C0BDB8] outline-none focus:border-[#1A1A1A] transition-colors resize-none leading-snug"
@@ -203,12 +207,12 @@ export function CartModal({
                 </div>
                 <div className="flex-1">
                   <p className="text-[14px] font-semibold text-[#1A1A1A]">
-                    {phoneConfirmed ? 'Teléfono añadido' : 'Añadir teléfono'}
+                    {phoneConfirmed ? t('cartModalPhoneTitleAdded') : t('cartModalPhoneTitleDefault')}
                   </p>
                   <p className="text-[12px] text-[#9B9589] mt-0.5 leading-snug">
                     {phoneConfirmed
                       ? `${country.flag} ${country.code} ${phone}`
-                      : 'Lo usará el repartidor si necesita contactar contigo.'}
+                      : t('cartModalPhoneSubtitleDefault')}
                   </p>
                 </div>
                 {phoneConfirmed
@@ -236,12 +240,12 @@ export function CartModal({
                 </div>
                 <div className="flex-1">
                   <p className="text-[14px] font-semibold text-[#1A1A1A]">
-                    {gpsEnabled ? 'Ubicación activa' : 'Activar ubicación'}
+                    {gpsEnabled ? t('cartModalGpsTitleAdded') : t('cartModalGpsTitleDefault')}
                   </p>
                   <p className="text-[12px] text-[#9B9589] mt-0.5 leading-snug">
                     {gpsEnabled
-                      ? 'El repartidor te encuentra en la playa.'
-                      : (gpsError ?? 'Necesaria para entregar en playa.')}
+                      ? t('cartModalGpsSubtitleAdded')
+                      : (gpsError ?? t('cartModalGpsSubtitleDefault'))}
                   </p>
                 </div>
                 {gpsEnabled
@@ -269,14 +273,14 @@ export function CartModal({
               {submitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Enviando pedido…
+                  {t('cartModalSubmitting')}
                 </>
               ) : canOrder ? (
-                `Confirmar pedido · ${total.toFixed(2)} €`
+                `${t('cartModalSubmitPending')} ${total.toFixed(2)} €`
               ) : !phoneConfirmed ? (
-                'Añade tu teléfono para continuar'
+                t('cartModalSubmitPhoneMissing')
               ) : (
-                'Activa la ubicación para pedir'
+                t('cartModalSubmitGpsMissing')
               )}
             </button>
           </div>
@@ -299,6 +303,7 @@ export function CartModal({
             setPhoneConfirmed(true);
             setPhoneModal(false);
           }}
+          language={language}
         />
       )}
 
@@ -315,6 +320,7 @@ export function CartModal({
             console.log('[CartModal] Checkout cerrado');
             setShowCheckout(false);
           }}
+          language={language}
         />
       )}
     </>

@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { ProductCard } from './ProductCard';
 import { fetchProductsByCategory } from '@/lib/helpers';
 import { CAT_COLORS, CAT_ICONS } from './colors';
-import { IcoBack, IcoBox, IcoCart } from './icons';
+import { IcoBack, IcoBox, IcoCart } from './Icons';
+import { getUiText, type SupportedLanguage } from '@/lib/i18n';
 
 export default function CategoryModal({
   category,
@@ -11,16 +12,19 @@ export default function CategoryModal({
   cart,
   onAdd,
   onRemove,
+  language,
 }: {
   category: Category;
   onClose: () => void;
   cart: CartItem[];
   onAdd: (p: Product) => void;
   onRemove: (id: number) => void;
+  language: SupportedLanguage;
 }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const t = (key: string) => getUiText(language, key);
 
   console.log(`[CategoryModal] Montando — slug=${category.slug}, id=${category.id}`);
 
@@ -29,7 +33,7 @@ export default function CategoryModal({
     setLoading(true);
     setError(null);
 
-    fetchProductsByCategory(category.id)
+    fetchProductsByCategory(category.id, language)
       .then((data) => {
         console.log(`[CategoryModal] Productos listos: ${data.length}`);
         setProducts(data);
@@ -40,7 +44,7 @@ export default function CategoryModal({
         setError('No se pudieron cargar los productos.');
         setLoading(false);
       });
-  }, [category.id, category.name]);
+  }, [category.id, category.name, language]);
 
   // Bloquear scroll
   useEffect(() => {
@@ -75,7 +79,7 @@ export default function CategoryModal({
         <button
           onClick={() => { console.log(`[CategoryModal] Cerrando "${category.name}"`); onClose(); }}
           className="w-9 h-9 rounded-full bg-[#F5F2ED] flex items-center justify-center text-[#1A1A1A] active:scale-95 transition-transform"
-          aria-label="Volver"
+          aria-label={t('categoryModalBackAria')}
         >
           <IcoBack />
         </button>
@@ -90,7 +94,7 @@ export default function CategoryModal({
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-[#9B9589] uppercase tracking-widest">Categoría</p>
+          <p className="text-[10px] text-[#9B9589] uppercase tracking-widest">{t('categoryModalHeaderLabel')}</p>
           <h2 className="text-[17px] font-bold text-[#1A1A1A] leading-tight truncate">{category.name}</h2>
         </div>
       </div>
@@ -100,22 +104,22 @@ export default function CategoryModal({
         {loading && (
           <div className="flex flex-col items-center justify-center h-48 gap-3">
             <div className="w-7 h-7 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
-            <p className="text-[13px] text-[#9B9589]">Cargando productos…</p>
+            <p className="text-[13px] text-[#9B9589]">{t('categoryModalLoading')}</p>
           </div>
         )}
 
         {!loading && error && (
           <div className="m-4 rounded-2xl bg-[#FEF2F2] border border-[#FECACA] p-4">
-            <p className="text-[14px] font-semibold text-[#DC2626]">No se pudieron cargar</p>
+            <p className="text-[14px] font-semibold text-[#DC2626]">{t('categoryModalErrorTitle')}</p>
             <p className="text-[12px] text-[#9B9589] mt-1">{error}</p>
-            <p className="text-[11px] text-[#9B9589] mt-2">Abre F12 → Consola para ver el error de Supabase.</p>
+            <p className="text-[11px] text-[#9B9589] mt-2">{t('categoryModalErrorConsole')}</p>
           </div>
         )}
 
         {!loading && !error && products.length === 0 && (
           <div className="flex flex-col items-center justify-center h-48 gap-2 px-8 text-center">
-            <p className="text-[15px] text-[#9B9589]">Sin productos en esta categoría.</p>
-            <p className="text-[11px] text-[#C0BDB8]">Revisa que el SQL se ejecutó en Supabase.</p>
+            <p className="text-[15px] text-[#9B9589]">{t('categoryModalEmptyTitle')}</p>
+            <p className="text-[11px] text-[#C0BDB8]">{t('categoryModalEmptyDescription')}</p>
           </div>
         )}
 
@@ -124,7 +128,7 @@ export default function CategoryModal({
             {featured.length > 0 && (
               <>
                 <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-widest mt-4 mb-0.5">
-                  Más pedidos
+                  {t('categoryModalMoreOrdered')}
                 </p>
                 {featured.map((p) => (
                   <ProductCard
@@ -141,7 +145,7 @@ export default function CategoryModal({
               <>
                 {featured.length > 0 && (
                   <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-widest mt-5 mb-0.5">
-                    Todos
+                    {t('categoryModalAll')}
                   </p>
                 )}
                 {rest.map((p) => (
@@ -167,7 +171,7 @@ export default function CategoryModal({
             className="w-full bg-[#1A1A1A] text-white rounded-2xl py-3.5 text-[15px] font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           >
             <IcoCart size={17} />
-            Ver carrito · {cartCount} {cartCount === 1 ? 'artículo' : 'artículos'}
+            {t('categoryModalViewCart')} · {cartCount} {cartCount === 1 ? t('categoryModalItemsOne') : t('categoryModalItemsMany')}
           </button>
         </div>
       )}

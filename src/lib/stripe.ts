@@ -17,9 +17,7 @@ let stripeServer: StripePackage | null = null;
 if (typeof window === 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Stripe = require('stripe') as typeof import('stripe').default;
-  stripeServer = new Stripe(stripeSecretKey, {
-    apiVersion: '2024-04-10',
-  });
+  stripeServer = new Stripe(stripeSecretKey);
 }
 
 export const stripe = stripeServer as StripePackage;

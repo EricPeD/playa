@@ -5,6 +5,8 @@ export interface Category {
   slug: string;
   is_active: boolean;
   sort_order: number;
+  description?: string | null;
+  emoji?: string | null;
 }
 
 export interface Product {
@@ -13,8 +15,15 @@ export interface Product {
   price: number;
   category_id: number;
   is_active: boolean;
-  description?: string;
-  image_url?: string;
+  description?: string | null;
+  image_url?: string | null;
+  brand?: string | null;
+  stock?: number | null;
+  badge?: string | null;
+  is_featured?: boolean;
+  is_pack?: boolean;
+  unit?: string | null;
+  sort_order?: number;
 }
 
 export interface CartItem {

@@ -106,14 +106,15 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelado',  color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   next: null,         nextLabel: null },
 };
 
-function elapsed(isoString) {
-  const mins = Math.floor((Date.now() - new Date(isoString)) / 60000);
+function elapsed(isoString: string) {
+  const timestamp = new Date(isoString).getTime();
+  const mins = Math.floor((Date.now() - timestamp) / 60000);
   if (mins < 1) return 'ahora';
   if (mins < 60) return `${mins}m`;
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 }
 
-function formatCurrency(n) {
+function formatCurrency(n: number) {
   return n.toFixed(2).replace('.', ',') + ' €';
 }
 
@@ -261,7 +262,7 @@ const S = {
     padding: '8px 0 12px',
     zIndex: 100,
   },
-  navItem: (active) => ({
+  navItem: (active: boolean) => ({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -292,7 +293,7 @@ const S = {
     gap: '10px',
     marginBottom: '16px',
   },
-  metricCard: (accent) => ({
+  metricCard: (accent: string) => ({
     background: '#1E1E1E',
     border: `1px solid ${accent ? accent + '30' : '#2A2A2A'}`,
     borderRadius: '14px',
@@ -318,13 +319,13 @@ const S = {
     color: '#555',
     marginTop: '3px',
   },
-  orderCard: (status) => ({
+  orderCard: (status: string) => ({
     background: '#1E1E1E',
     border: '1px solid #2A2A2A',
     borderRadius: '14px',
     overflow: 'hidden',
     marginBottom: '10px',
-    borderLeft: `4px solid ${STATUS_CONFIG[status]?.color || '#555'}`,
+    borderLeft: `4px solid ${STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.color || '#555'}`,
   }),
   orderCardInner: {
     padding: '14px',
@@ -347,7 +348,7 @@ const S = {
     color: '#F1F0ED',
     marginTop: '2px',
   },
-  statusBadge: (status) => ({
+  statusBadge: (status: string) => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
@@ -355,8 +356,8 @@ const S = {
     borderRadius: '20px',
     fontSize: '11px',
     fontWeight: 600,
-    background: STATUS_CONFIG[status]?.bg || '#333',
-    color: STATUS_CONFIG[status]?.color || '#aaa',
+    background: STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.bg || '#333',
+    color: STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.color || '#aaa',
     whiteSpace: 'nowrap',
   }),
   timeBadge: {
@@ -400,7 +401,7 @@ const S = {
     fontWeight: 700,
     color: '#F1F0ED',
   },
-  payBadge: (paid) => ({
+  payBadge: (paid: boolean) => ({
     display: 'inline-block',
     padding: '3px 9px',
     borderRadius: '20px',
@@ -414,7 +415,7 @@ const S = {
     gap: '8px',
     marginTop: '12px',
   },
-  btnPrimary: (color) => ({
+  btnPrimary: (color: string) => ({
     flex: 1,
     padding: '11px',
     borderRadius: '10px',

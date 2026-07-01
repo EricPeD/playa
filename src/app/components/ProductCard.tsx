@@ -1,4 +1,4 @@
-import {IcoPlus, IcoBox, IcoMinus } from"./icons";
+import {IcoPlus, IcoBox, IcoMinus } from"./Icons";
 import {Product} from"@/lib/types";
 import {BadgePill} from "./BadgePill";
 

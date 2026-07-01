@@ -1,17 +1,20 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { COUNTRY_CODES } from '@/lib/country';
+import { getUiText, type SupportedLanguage } from '@/lib/i18n';
 
 export function PhoneModal({
   onSave,
   onClose,
   initialPhone,
   initialCountry,
+  language,
 }: {
   onSave: (phone: string, country: typeof COUNTRY_CODES[0]) => void;
   onClose: () => void;
   initialPhone: string;
   initialCountry: typeof COUNTRY_CODES[0];
+  language: SupportedLanguage;
 }) {
   const [phone, setPhone] = useState(initialPhone);
   const [country, setCountry] = useState(initialCountry);
@@ -19,6 +22,7 @@ export function PhoneModal({
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
+  const t = (key: string) => getUiText(language, key);
 
   const isValid = /^\d{7,12}$/.test(phone.replace(/\s/g, ''));
 
@@ -82,8 +86,8 @@ export function PhoneModal({
             </svg>
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] text-[#9B9589] uppercase tracking-widest">Seleccionar</p>
-            <h2 className="text-[17px] font-bold text-[#1A1A1A]">Código de país</h2>
+            <p className="text-[10px] text-[#9B9589] uppercase tracking-widest">{t('phoneModalCountryPickerTitle')}</p>
+            <h2 className="text-[17px] font-bold text-[#1A1A1A]">{t('phoneModalCountryPickerTitle')}</h2>
           </div>
         </div>
 
@@ -100,7 +104,7 @@ export function PhoneModal({
               ref={searchRef}
               type="text"
               inputMode="search"
-              placeholder="Buscar país o código…"
+              placeholder={t('phoneModalCountrySearchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#F5F2ED] text-[14px] text-[#1A1A1A] placeholder:text-[#B0ABA4] outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 transition"
@@ -123,7 +127,7 @@ export function PhoneModal({
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 gap-2">
-              <p className="text-[14px] text-[#9B9589]">Sin resultados para «{search}»</p>
+              <p className="text-[14px] text-[#9B9589]">{t('phoneModalCountryEmpty')} «{search}»</p>
             </div>
           ) : (
             <ul>
@@ -191,15 +195,15 @@ export function PhoneModal({
           {/* Title row */}
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-[19px] font-bold text-[#1A1A1A]">Tu teléfono</h3>
+              <h3 className="text-[19px] font-bold text-[#1A1A1A]">{t('phoneModalHeaderTitle')}</h3>
               <p className="text-[13px] text-[#9B9589] mt-0.5 leading-snug">
-                El repartidor te contacta si no te localiza en la playa.
+                {t('phoneModalHeaderSubtitle')}
               </p>
             </div>
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-[#F5F2ED] flex items-center justify-center text-[#9B9589] shrink-0 mt-0.5 active:scale-95 transition-transform"
-              aria-label="Cerrar"
+              aria-label={t('phoneModalCloseAria')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M18 6 6 18M6 6l12 12"/>
@@ -232,7 +236,7 @@ export function PhoneModal({
                 type="tel"
                 inputMode="numeric"
                 pattern="[0-9\s]*"
-                placeholder="612 345 678"
+                placeholder={t('phoneModalInputPlaceholder')}
                 value={phone}
                 onChange={(e) => {
                   const val = e.target.value.replace(/[^\d\s]/g, '');
@@ -247,7 +251,7 @@ export function PhoneModal({
                 <button
                   onClick={() => { setPhone(''); phoneRef.current?.focus(); }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#E0DDD8] flex items-center justify-center text-[#9B9589] active:scale-95"
-                  aria-label="Borrar"
+                  aria-label={t('phoneModalClearAria')}
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                     <path d="M18 6 6 18M6 6l12 12"/>

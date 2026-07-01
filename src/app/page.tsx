@@ -3,13 +3,58 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Category, Product, CartItem } from '@/lib/types';
-import { fetchCategories, fetchProductsByCategory, requestGPS } from '@/lib/helpers';
-import { IcoBack, IcoBox, IcoCart, IcoDrink, IcoWine, IcoSandwich, IcoCookie, IcoIceCream, IcoCigarette, IcoPill, IcoSun, IcoGift, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin  } from './components/icons';
-import CategoryModal from "@/app/components/CategoryModal"
+import { fetchCategories, requestGPS } from '@/lib/helpers';
+import { IcoBox, IcoCart, IcoCheck, IcoPin, IcoPinOff } from '@/app/components/Icons';
+import CategoryModal from '@/app/components/CategoryModal';
 import { CAT_COLORS, CAT_ICONS } from './components/colors';
 import { CartModal } from './components/CartModal';
+import {
+  DEFAULT_LANGUAGE,
+  getStoredLanguage,
+  getUiText,
+  normalizeLanguage,
+  setStoredLanguage,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from '@/lib/i18n';
 
+// ─── LanguageSelector ───────────────────────────────────────────────────────
 
+function LanguageSelector({ onSelect }: { onSelect: (code: string) => void }) {
+  return (
+    <div className="min-h-screen bg-[#FAFAF8] flex flex-col max-w-md mx-auto">
+      <div className="flex-1 flex flex-col justify-center px-6">
+        <div className="text-center mb-10">
+          <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-[0.25em]">
+            Playa Delivery
+          </p>
+          <h1 className="text-[28px] font-black text-[#1A1A1A] leading-[1.1] mt-1.5">
+            {getUiText(DEFAULT_LANGUAGE, 'languageSelectorTitle')}
+          </h1>
+          <p className="text-[13px] text-[#9B9589] mt-1.5 leading-snug">
+            {getUiText(DEFAULT_LANGUAGE, 'languageSelectorSubtitle')}
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => {
+                console.log('[LanguageSelector] idioma seleccionado:', lang.code);
+                onSelect(lang.code);
+              }}
+              className="w-full flex items-center gap-4 rounded-2xl bg-white border border-[#E8E5E0] px-5 py-4 active:scale-[0.97] transition-transform"
+            >
+              <span className="text-[26px] leading-none">{lang.flag}</span>
+              <span className="text-[16px] font-semibold text-[#1A1A1A]">{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── HomePage ─────────────────────────────────────────────────────────────────
 
@@ -17,6 +62,8 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
   const [catsError, setCatsError] = useState<string | null>(null);
+
+  const CART_STORAGE_KEY = 'playa-cart';
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
@@ -27,16 +74,53 @@ export default function HomePage() {
   const [gpsData, setGpsData] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const [orderDone, setOrderDone] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  console.log('[HomePage] Render — cats:', categories.length, '| cart:', cart.length, '| gps:', gpsEnabled);
+  const [language, setLanguage] = useState<SupportedLanguage>(DEFAULT_LANGUAGE);
+  const [languageSelected, setLanguageSelected] = useState(false);
 
-  // Cargar categorías
+  const t = useCallback((key: string) => getUiText(language, key), [language]);
+
+  console.log('[HomePage] Render — cats:', categories.length, '| cart:', cart.length, '| gps:', gpsEnabled, '| lang:', language);
+
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const storedLanguage = getStoredLanguage();
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+        setLanguageSelected(true);
+      }
+
+      const storedCart = window.localStorage.getItem(CART_STORAGE_KEY);
+      if (storedCart) {
+        const parsedCart = JSON.parse(storedCart) as CartItem[];
+        if (Array.isArray(parsedCart)) {
+          setCart(parsedCart);
+        }
+      }
+    } catch (error) {
+      console.error('[HomePage] Error al restaurar storage:', error);
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || typeof window === 'undefined') return;
+    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  }, [cart, hydrated]);
+
+  // Cargar categorías (solo cuando ya hay idioma seleccionado)
+  useEffect(() => {
+    if (!languageSelected) return;
+
     console.log('[HomePage] useEffect mount — cargando categorías');
     setLoadingCats(true);
     setCatsError(null);
 
-    fetchCategories()
+    fetchCategories(language)
       .then((data) => {
         console.log('[HomePage] Categorías OK:', data.length, data.map((c) => `${c.name}(${c.id})`));
         setCategories(data);
@@ -44,9 +128,17 @@ export default function HomePage() {
       })
       .catch((err: unknown) => {
         console.error('[HomePage] Error inesperado:', err);
-        setCatsError('Error al conectar con la base de datos.');
+        setCatsError(t('homeErrorDescription'));
         setLoadingCats(false);
       });
+  }, [language, languageSelected, t]);
+
+  // Selección de idioma
+  const handleSelectLanguage = useCallback((code: string) => {
+    const normalized = normalizeLanguage(code);
+    setLanguage(normalized);
+    setStoredLanguage(normalized);
+    setLanguageSelected(true);
   }, []);
 
   // Cart actions
@@ -100,15 +192,23 @@ export default function HomePage() {
   }, [gpsEnabled]);
 
   // Place order
-  const handlePlaceOrder = useCallback(async (orderId?: number) => {
+  const handlePlaceOrder = useCallback(async () => {
     const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
-    console.group('[Order] Confirmación de pedido');
-    console.log('orderId:', orderId ?? 'sin id');
+    console.group('[Order] Creando pedido');
     console.log('Items:', cart.map((i) => `${i.product.name} x${i.quantity}`));
     console.log('Total:', total.toFixed(2), '€');
     console.log('GPS activo:', gpsEnabled);
 
-    console.log('Pedido confirmado. Limpiando estado...');
+    // TODO: insertar en Supabase
+    // const { data, error } = await supabase.from('orders').insert({
+    //   status: 'pending',
+    //   subtotal: total,
+    //   total: total,
+    //   payment_method: 'bizum',
+    // });
+    // console.log('Supabase order result:', data, error);
+
+    console.log('Pedido enviado (simulado). Limpiando estado...');
     console.groupEnd();
 
     setCart([]);
@@ -116,30 +216,43 @@ export default function HomePage() {
     setOrderDone(true);
     setTimeout(() => setOrderDone(false), 4000);
   }, [cart, gpsEnabled]);
- 
+
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const cartTotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
 
-
   useEffect(() => {
-  console.log("gpsData actualizado:", gpsData);
+    console.log('gpsData actualizado:', gpsData);
   }, [gpsData]);
 
+  // ── Pantalla de selección de idioma ──
+  if (!languageSelected) {
+    return <LanguageSelector onSelect={handleSelectLanguage} />;
+  }
 
+  // ── Pantalla principal ──
   return (
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col max-w-md mx-auto relative">
-
-      {/* ── Header ── */}
       <header className="px-5 pt-8 pb-5">
         <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-[0.25em]">
-          Playa Delivery
+          {t('appBrand')}
         </p>
         <h1 className="text-[30px] font-black text-[#1A1A1A] leading-[1.1] mt-1.5">
-          ¿Qué te<br />pedimos hoy?
+          {t('homeTitleLine1')}<br />{t('homeTitleLine2')}
         </h1>
         <p className="text-[13px] text-[#9B9589] mt-1.5 leading-snug">
-          Elige categoría · te lo llevamos a la sombrilla.
+          {t('homeSubtitle')}
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => handleSelectLanguage(lang.code)}
+              className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${language === lang.code ? 'border-[#1A1A1A] bg-[#1A1A1A] text-white' : 'border-[#E0DDD8] bg-white text-[#1A1A1A]'}`}
+            >
+              {lang.flag} {lang.code.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </header>
 
       {/* ── Categorías ── */}
@@ -148,11 +261,9 @@ export default function HomePage() {
         {/* Error */}
         {catsError && (
           <div className="rounded-2xl bg-[#FEF2F2] border border-[#FECACA] p-4 mb-4">
-            <p className="text-[14px] font-semibold text-[#DC2626]">Error al cargar categorías</p>
+            <p className="text-[14px] font-semibold text-[#DC2626]">{t('homeErrorTitle')}</p>
             <p className="text-[12px] text-[#9B9589] mt-1">{catsError}</p>
-            <p className="text-[11px] text-[#9B9589] mt-2">
-              Abre F12 → Consola para ver los logs de Supabase.
-            </p>
+            <p className="text-[11px] text-[#9B9589] mt-2">{t('homeErrorConsole')}</p>
           </div>
         )}
 
@@ -205,13 +316,9 @@ export default function HomePage() {
         {/* Empty state */}
         {!loadingCats && !catsError && categories.length === 0 && (
           <div className="rounded-2xl border border-dashed border-[#D0CCC5] p-8 text-center mt-2">
-            <p className="text-[15px] font-semibold text-[#1A1A1A]">Sin categorías</p>
-            <p className="text-[13px] text-[#9B9589] mt-1">
-              El SQL devolvió 0 filas. Revisa que se ejecutó en Supabase y que RLS permite lectura anónima.
-            </p>
-            <p className="text-[11px] text-[#C0BDB8] mt-2">
-              Abre F12 → Consola para ver los detalles del error.
-            </p>
+            <p className="text-[15px] font-semibold text-[#1A1A1A]">{t('homeEmptyTitle')}</p>
+            <p className="text-[13px] text-[#9B9589] mt-1">{t('homeEmptyDescription')}</p>
+            <p className="text-[11px] text-[#C0BDB8] mt-2">{t('homeEmptyConsole')}</p>
           </div>
         )}
       </main>
@@ -222,8 +329,8 @@ export default function HomePage() {
           <div className="bg-[#1A1A1A] text-white rounded-2xl px-5 py-4 flex items-center gap-3">
             <span className="text-[#4ADE80]"><IcoCheck size={22} /></span>
             <div>
-              <p className="text-[15px] font-semibold">Pedido recibido</p>
-              <p className="text-[12px] text-white/50">En camino a tu sombrilla.</p>
+              <p className="text-[15px] font-semibold">{t('homeOrderToastTitle')}</p>
+              <p className="text-[12px] text-white/50">{t('homeOrderToastSubtitle')}</p>
             </div>
           </div>
         </div>
@@ -241,7 +348,7 @@ export default function HomePage() {
             }`}
           >
             {gpsEnabled ? <IcoPin size={17} /> : <IcoPinOff size={17} />}
-            <span>{gpsEnabled ? 'Ubicado' : 'Ubicación'}</span>
+            <span>{gpsEnabled ? t('homeGpsButtonActive') : t('homeGpsButtonInactive')}</span>
           </button>
 
           {/* Cart */}
@@ -250,7 +357,7 @@ export default function HomePage() {
             className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#1A1A1A] text-white text-[13px] font-semibold active:scale-95 transition-transform relative"
           >
             <IcoCart size={17} />
-            <span>{cartCount > 0 ? `${cartTotal.toFixed(2)} €` : 'Carrito'}</span>
+            <span>{cartCount > 0 ? `${cartTotal.toFixed(2)} €` : t('homeCartButton')}</span>
             {cartCount > 0 && (
               <span className="absolute -top-1.5 -right-1 w-5 h-5 bg-[#E65100] text-white text-[11px] font-bold rounded-full flex items-center justify-center tabular-nums">
                 {cartCount}
@@ -272,6 +379,7 @@ export default function HomePage() {
           cart={cart}
           onAdd={addToCart}
           onRemove={removeFromCart}
+          language={language}
         />
       )}
 
@@ -286,6 +394,7 @@ export default function HomePage() {
           onAdd={addToCart}
           onRemove={removeFromCart}
           gpsData={gpsData}
+          language={language}
         />
       )}
     </div>

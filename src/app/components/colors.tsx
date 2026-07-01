@@ -1,4 +1,4 @@
-import { IcoDrink, IcoWine, IcoSandwich, IcoCookie, IcoIceCream, IcoCigarette, IcoPill, IcoSun, IcoGift } from '@/app/components/icons';
+import { IcoDrink, IcoWine, IcoSandwich, IcoCookie, IcoIceCream, IcoCigarette, IcoPill, IcoSun, IcoGift } from '@/app/components/Icons';
 import type { ReactNode } from "react";
 
 export const CAT_ICONS: Record<string, React.ReactNode> = {

@@ -8,12 +8,14 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js';
 import { getStripe } from '@/lib/stripe';
+import { getUiText, type SupportedLanguage } from '@/lib/i18n';
 
 function CheckoutForm({
   orderId,
   total,
   onSuccess,
   onClose,
+  language,
 }: {
   orderId: number;
   total: number;
@@ -24,13 +26,14 @@ function CheckoutForm({
   const elements = useElements();
   const [confirming, setConfirming] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const t = (key: string) => getUiText(language, key);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMessage(null);
 
     if (!stripe || !elements) {
-      setErrorMessage('Stripe aún no está listo. Intenta de nuevo en unos segundos.');
+      setErrorMessage(t('checkoutStripeReady'));
       return;
     }
 
@@ -44,7 +47,7 @@ function CheckoutForm({
     });
 
     if (result.error) {
-      setErrorMessage(result.error.message ?? 'Error al confirmar el pago');
+      setErrorMessage(result.error.message ?? t('checkoutPaymentError'));
       setConfirming(false);
       return;
     }
@@ -55,7 +58,7 @@ function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6 px-4 pb-6">
       <div className="rounded-2xl border border-[#E0DDD8] bg-white p-5 text-[#1A1A1A] shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">Paga tu pedido</h3>
+        <h3 className="text-lg font-semibold mb-4">{t('checkoutPayTitle')}</h3>
         <div className="stripe-element w-full min-w-0">
           <PaymentElement />
         </div>
@@ -74,10 +77,10 @@ function CheckoutForm({
           {confirming ? (
             <span className="flex items-center justify-center gap-2">
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Confirmando pago…
+              {t('checkoutConfirming')}
             </span>
           ) : (
-            `Pagar ${total.toFixed(2)} €`
+            `${t('checkoutPayButton')} ${total.toFixed(2)} €`
           )}
         </button>
         <button
@@ -85,7 +88,7 @@ function CheckoutForm({
           onClick={onClose}
           className="w-full rounded-2xl border border-[#E0DDD8] bg-white px-4 py-4 text-[#1A1A1A] font-semibold"
         >
-          Volver
+          {t('checkoutReturn')}
         </button>
       </div>
     </form>
@@ -97,13 +100,16 @@ export function CheckoutModal({
   total,
   onSuccess,
   onClose,
+  language,
 }: {
   orderId: number;
   total: number;
   onSuccess: (orderId: number) => void;
   onClose: () => void;
+  language: SupportedLanguage;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const t = (key: string) => getUiText(language, key);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const stripePromise = useMemo(() => getStripe(), []);
@@ -151,8 +157,8 @@ export function CheckoutModal({
       <div className="w-full max-w-[95vw] sm:max-w-md overflow-hidden rounded-3xl border border-[#E0DDD8] bg-[#FAFAF8] shadow-2xl">
         <div className="flex items-center justify-between px-5 py-5 bg-white border-b border-[#E0DDD8]">
           <div>
-            <p className="text-[12px] uppercase tracking-[0.25em] text-[#9B9589]">Pago seguro</p>
-            <h2 className="text-xl font-bold text-[#1A1A1A]">Checkout</h2>
+            <p className="text-[12px] uppercase tracking-[0.25em] text-[#9B9589]">{t('checkoutTitle')}</p>
+            <h2 className="text-xl font-bold text-[#1A1A1A]">{t('checkoutSubtitle')}</h2>
           </div>
           <button
             onClick={onClose}
@@ -168,7 +174,7 @@ export function CheckoutModal({
             <div className="flex min-h-[220px] items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-[#9B9589]">
                 <span className="w-10 h-10 border-4 border-[#1A1A1A]/20 border-t-[#1A1A1A] rounded-full animate-spin" />
-                Cargando método de pago…
+                {t('checkoutLoading')}
               </div>
             </div>
           ) : fetchError ? (
@@ -178,12 +184,12 @@ export function CheckoutModal({
                 onClick={onClose}
                 className="rounded-2xl bg-[#1A1A1A] px-4 py-3 text-white font-semibold"
               >
-                Cerrar
+                {t('checkoutErrorClose')}
               </button>
             </div>
           ) : clientSecret ? (
             <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, paymentElement: paymentElementOptions }}>
-              <CheckoutForm orderId={orderId} total={total} onSuccess={onSuccess} onClose={onClose} />
+              <CheckoutForm orderId={orderId} total={total} onSuccess={onSuccess} onClose={onClose} language={language} />
             </Elements>
           ) : (
             <p className="text-center text-[#9B9589]">No se encontró información de pago.</p>
