@@ -39,21 +39,22 @@ export async function POST(request: Request) {
     }
 
     const savedEvent = await saveWebhookEvent(event.id, event.type, event.data.object);
-    if (!savedEvent) {
-      return jsonResponse({ error: 'Failed to save webhook event' }, 500);
+    if (savedEvent === 'duplicate') {
+      return jsonResponse({ received: true, skipped: true });
     }
 
     if (event.type === 'payment_intent.succeeded') {
       const intent = event.data.object as Stripe.PaymentIntent;
       const chargeId = typeof intent.latest_charge === 'string' ? intent.latest_charge : null;
+      const orderId = Number.parseInt(String(intent.metadata.orderId ?? ''), 10);
 
-      const paid = await markOrderPaid(intent.id);
+      const paid = await markOrderPaid(intent.id, Number.isFinite(orderId) ? orderId : undefined);
       if (!paid) {
         return jsonResponse({ error: 'Failed to mark order paid' }, 500);
       }
 
       const inserted = await insertPayment({
-        orderId: Number(intent.metadata.orderId),
+        orderId: Number.isFinite(orderId) ? orderId : 0,
         stripePaymentIntentId: intent.id,
         stripeChargeId: chargeId,
         amount: intent.amount / 100,
@@ -69,14 +70,20 @@ export async function POST(request: Request) {
       const err = intent.last_payment_error;
       const failureCode = err?.code ?? 'unknown';
       const failureMessage = err?.message ?? 'unknown';
+      const orderId = Number.parseInt(String(intent.metadata.orderId ?? ''), 10);
 
-      const failed = await markOrderFailed(intent.id, failureCode, failureMessage);
+      const failed = await markOrderFailed(
+        intent.id,
+        failureCode,
+        failureMessage,
+        Number.isFinite(orderId) ? orderId : undefined,
+      );
       if (!failed) {
         return jsonResponse({ error: 'Failed to mark order failed' }, 500);
       }
 
       const inserted = await insertPayment({
-        orderId: Number(intent.metadata.orderId),
+        orderId: Number.isFinite(orderId) ? orderId : 0,
         stripePaymentIntentId: intent.id,
         stripeChargeId: null,
         amount: intent.amount / 100,

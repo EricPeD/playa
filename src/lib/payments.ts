@@ -20,7 +20,7 @@ export async function savePaymentIntent(
       .from('orders')
       .update({
         stripe_payment_intent_id: intentId,
-        stripe_status: 'failed',
+        stripe_status: 'pending',
       })
       .eq('id', orderId);
 
@@ -96,20 +96,27 @@ export async function insertPayment({
 
 export async function markOrderPaid(
   stripePaymentIntentId: string,
+  orderId?: number,
 ): Promise<boolean> {
-  logGroupStart('markOrderPaid', { stripePaymentIntentId });
+  logGroupStart('markOrderPaid', { stripePaymentIntentId, orderId });
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('orders')
       .update({
         status: 'confirmed',
         stripe_status: 'succeeded',
         paid_at: new Date().toISOString(),
         payment_method: 'stripe',
-      })
-      .eq('stripe_payment_intent_id', stripePaymentIntentId)
-      .select('id');
+      });
+
+    if (typeof orderId === 'number' && Number.isFinite(orderId) && orderId > 0) {
+      query = query.eq('id', orderId);
+    } else {
+      query = query.eq('stripe_payment_intent_id', stripePaymentIntentId);
+    }
+
+    const { data, error } = await query.select('id');
 
     if (error) {
       console.error('[markOrderPaid] Error:', error.message);
@@ -135,19 +142,26 @@ export async function markOrderFailed(
   stripePaymentIntentId: string,
   failureCode: string,
   failureMessage: string,
+  orderId?: number,
 ): Promise<boolean> {
-  logGroupStart('markOrderFailed', { stripePaymentIntentId, failureCode, failureMessage });
+  logGroupStart('markOrderFailed', { stripePaymentIntentId, failureCode, failureMessage, orderId });
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('orders')
       .update({
         status: 'decline',
         stripe_status: 'failed',
         payment_method: 'stripe',
-      })
-      .eq('stripe_payment_intent_id', stripePaymentIntentId)
-      .select('id');
+      });
+
+    if (typeof orderId === 'number' && Number.isFinite(orderId) && orderId > 0) {
+      query = query.eq('id', orderId);
+    } else {
+      query = query.eq('stripe_payment_intent_id', stripePaymentIntentId);
+    }
+
+    const { data, error } = await query.select('id');
 
     if (error) {
       console.error('[markOrderFailed] Error:', error.message);
@@ -230,27 +244,39 @@ export async function saveWebhookEvent(
   stripeEventId: string,
   type: string,
   payload: object,
-): Promise<boolean> {
+): Promise<'inserted' | 'duplicate'> {
   logGroupStart('saveWebhookEvent', { stripeEventId, type });
 
   try {
-    const { error } = await supabase.from('stripe_webhook_events').insert({
-      stripe_event_id: stripeEventId,
-      type,
-      payload,
-      processed_at: new Date().toISOString(),
-    });
+    const { data, error } = await supabase
+      .from('stripe_webhook_events')
+      .upsert(
+        {
+          stripe_event_id: stripeEventId,
+          type,
+          payload,
+          processed_at: new Date().toISOString(),
+        },
+        { onConflict: 'stripe_event_id', ignore: true },
+      )
+      .select('id');
 
     if (error) {
       console.error('[saveWebhookEvent] Error:', error.message);
-      return false;
+      return 'duplicate';
     }
 
-    console.log('[saveWebhookEvent] Evento guardado:', stripeEventId);
-    return true;
+    const inserted = Boolean(data && data.length > 0);
+    console.log(
+      inserted
+        ? '[saveWebhookEvent] Evento guardado:'
+        : '[saveWebhookEvent] Evento ya existente:',
+      stripeEventId,
+    );
+    return inserted ? 'inserted' : 'duplicate';
   } catch (error) {
     console.error('[saveWebhookEvent] Exception:', error);
-    return false;
+    return 'duplicate';
   } finally {
     logGroupEnd();
   }
