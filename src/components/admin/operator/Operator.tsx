@@ -1,7 +1,7 @@
 import type { OrderWithDetails } from '@/hooks/useOrders';
 import { formatCurrency } from '@/utils/format';
 import { elapsed } from '@/utils/format';
-import { STATUS_CONFIG } from '@/utils/statusConfig';
+import { STATUS_CONFIG, getStatusConfig } from '@/utils/statusConfig';
 import { icons } from '@/components/admin/icons';
 import S from '@/components/admin/styles';
 
@@ -41,7 +41,8 @@ export default function Operator({ orders, onAdvance }: OperatorProps) {
       </div>
 
       {activeOrders.map((order) => {
-        const cfg = STATUS_CONFIG[order.status];
+        const cfg = getStatusConfig(order.status);
+        const nextCfg = cfg.next ? getStatusConfig(cfg.next) : null;
         return (
           <div key={order.id} style={{ ...S.operatorCard, borderLeft: `5px solid ${cfg.color}` }}>
             <p style={S.opOrderId}>PEDIDO #{order.id} · {elapsed(order.created_at)}</p>
@@ -76,7 +77,7 @@ export default function Operator({ orders, onAdvance }: OperatorProps) {
 
             {cfg.next && (
               <button
-                style={S.opBtn(STATUS_CONFIG[cfg.next].color)}
+                style={S.opBtn(nextCfg?.color ?? '#6B7280')}
                 onClick={() => onAdvance(order.id, cfg.next)}
               >
                 {cfg.nextLabel} →

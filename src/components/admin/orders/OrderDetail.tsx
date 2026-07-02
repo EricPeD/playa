@@ -1,5 +1,5 @@
 import { formatCurrency, elapsed } from '@/utils/format';
-import { STATUS_CONFIG } from '@/utils/statusConfig';
+import { STATUS_CONFIG, getStatusConfig } from '@/utils/statusConfig';
 import type { OrderWithDetails } from '@/hooks/useOrders';
 import { icons } from '@/components/admin/icons';
 import S from '@/components/admin/styles';
@@ -12,7 +12,8 @@ type OrderDetailProps = {
 };
 
 export default function OrderDetail({ order, onClose, onAdvance, onCancel }: OrderDetailProps) {
-  const cfg = STATUS_CONFIG[order.status];
+  const cfg = getStatusConfig(order.status);
+  const nextCfg = cfg.next ? getStatusConfig(cfg.next) : null;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#111', zIndex: 200, overflowY: 'auto', maxWidth: '430px', margin: '0 auto' }}>
@@ -79,7 +80,7 @@ export default function OrderDetail({ order, onClose, onAdvance, onCancel }: Ord
         {cfg.next && (
           <button
             onClick={() => onAdvance(order.id, cfg.next)}
-            style={S.opBtn(STATUS_CONFIG[cfg.next].color)}
+            style={S.opBtn(nextCfg?.color ?? '#6B7280')}
           >
             → {cfg.nextLabel}
           </button>

@@ -1,5 +1,5 @@
 import { formatCurrency, elapsed } from '@/utils/format';
-import { STATUS_CONFIG } from '@/utils/statusConfig';
+import { STATUS_CONFIG, getStatusConfig } from '@/utils/statusConfig';
 import type { OrderWithDetails } from '@/hooks/useOrders';
 import { icons } from '@/components/admin/icons';
 import S from '@/components/admin/styles';
@@ -12,7 +12,8 @@ type OrderCardProps = {
 };
 
 export default function OrderCard({ order, onAdvance, onCancel, onOpen }: OrderCardProps) {
-  const cfg = STATUS_CONFIG[order.status];
+  const cfg = getStatusConfig(order.status);
+  const nextCfg = cfg.next ? getStatusConfig(cfg.next) : null;
 
   return (
     <div style={S.orderCard(order.status)}>
@@ -54,7 +55,7 @@ export default function OrderCard({ order, onAdvance, onCancel, onOpen }: OrderC
         <div style={S.actionRow}>
           {cfg.next && (
             <button
-              style={S.btnPrimary(STATUS_CONFIG[cfg.next].color)}
+              style={S.btnPrimary(nextCfg?.color ?? '#6B7280')}
               onClick={() => onAdvance(order.id, cfg.next)}
             >
               {cfg.nextLabel}

@@ -6,6 +6,13 @@ export const STATUS_CONFIG = {
     next: 'preparing',
     nextLabel: 'Preparar',
   },
+  confirmed: {
+    label: 'Confirmado',
+    color: '#0EA5E9',
+    bg: 'rgba(14,165,233,0.15)',
+    next: 'preparing',
+    nextLabel: 'Preparar',
+  },
   preparing: {
     label: 'Preparando',
     color: '#3B82F6',
@@ -36,4 +43,16 @@ export const STATUS_CONFIG = {
   },
 } as const;
 
+export const DEFAULT_STATUS_CONFIG = {
+  label: 'Desconocido',
+  color: '#6B7280',
+  bg: 'rgba(107,114,128,0.15)',
+  next: null,
+  nextLabel: null,
+} as const;
+
 export type OrderStatus = keyof typeof STATUS_CONFIG;
+
+export function getStatusConfig(status: string) {
+  return STATUS_CONFIG[status as OrderStatus] ?? DEFAULT_STATUS_CONFIG;
+}
