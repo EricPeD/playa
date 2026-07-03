@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import type { OrderItem, Order } from '@/lib/types';
+import type { Order } from '@/lib/types';
 
 export type OrderItemDetail = {
   id: number;
@@ -21,6 +21,7 @@ export type OrderWithDetails = Order & {
 export function useOrders() {
   const [orders, setOrders] = useState<OrderWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedOnce, setLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const mapOrder = (order: any): OrderWithDetails => {
@@ -48,7 +49,7 @@ export function useOrders() {
   };
 
   const fetchOrders = useCallback(async () => {
-    setLoading(true);
+    if (!loadedOnce) setLoading(true);
     setError(null);
 
     const { data, error } = await supabase
@@ -56,25 +57,28 @@ export function useOrders() {
       .select(
         `id, customer_id, status, beach_location, notes, subtotal, delivery_fee, total, paid_at, payment_method, created_at, customers(name, phone), order_items(id, product_id, quantity, unit_price, subtotal, products(name)))`
       )
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
 
     if (error) {
       setError(error.message);
       setOrders([]);
       setLoading(false);
+      setLoadedOnce(true);
       return;
     }
 
     if (!data) {
       setOrders([]);
       setLoading(false);
+      setLoadedOnce(true);
       return;
     }
 
     const normalized = data.map(mapOrder);
     setOrders(normalized);
     setLoading(false);
-  }, []);
+    setLoadedOnce(true);
+  }, [loadedOnce]);
 
   useEffect(() => {
     fetchOrders();
@@ -83,7 +87,7 @@ export function useOrders() {
   }, [fetchOrders]);
 
   const updateOrderStatus = useCallback(async (orderId: number, newStatus: string) => {
-    setLoading(true);
+    if (!loadedOnce) setLoading(true);
     setError(null);
 
     const { error: updateError } = await supabase
@@ -93,7 +97,7 @@ export function useOrders() {
 
     if (updateError) {
       setError(updateError.message);
-      setLoading(false);
+      if (!loadedOnce) setLoading(false);
       return false;
     }
 
@@ -103,20 +107,20 @@ export function useOrders() {
 
     if (trackingError) {
       setError(trackingError.message);
-      setLoading(false);
+      if (!loadedOnce) setLoading(false);
       return false;
     }
 
     await fetchOrders();
     return true;
-  }, [fetchOrders]);
+  }, [fetchOrders, loadedOnce]);
 
   const advanceOrder = useCallback(async (orderId: number, newStatus: string) => {
     return updateOrderStatus(orderId, newStatus);
   }, [updateOrderStatus]);
 
   const cancelOrder = useCallback(async (orderId: number) => {
-    return updateOrderStatus(orderId, orderId ? 'cancelled' : 'cancelled');
+    return updateOrderStatus(orderId, 'cancelled');
   }, [updateOrderStatus]);
 
   return {

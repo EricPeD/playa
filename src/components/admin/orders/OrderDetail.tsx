@@ -1,6 +1,11 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { formatCurrency, elapsed } from '@/utils/format';
-import { STATUS_CONFIG, getStatusConfig } from '@/utils/statusConfig';
+import { getStatusConfig } from '@/utils/statusConfig';
 import type { OrderWithDetails } from '@/hooks/useOrders';
+import { geocodeLocation } from '@/utils/geocode';
 import { icons } from '@/components/admin/icons';
 import S from '@/components/admin/styles';
 
@@ -11,9 +16,37 @@ type OrderDetailProps = {
   onCancel: (orderId: number) => Promise<boolean>;
 };
 
+const OrderMap = dynamic(() => import('./OrderMap'), { ssr: false });
+
 export default function OrderDetail({ order, onClose, onAdvance, onCancel }: OrderDetailProps) {
+  const [geoPoint, setGeoPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
   const cfg = getStatusConfig(order.status);
   const nextCfg = cfg.next ? getStatusConfig(cfg.next) : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setGeoError(null);
+      setGeoPoint(null);
+      if (!order.beach_location) return;
+      setIsGeocoding(true);
+      const result = await geocodeLocation(order.beach_location);
+      if (cancelled) return;
+      setIsGeocoding(false);
+      if (!result) {
+        setGeoError('No se pudo geocodificar la ubicación.');
+        return;
+      }
+      setGeoPoint(result);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [order.beach_location]);
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#111', zIndex: 200, overflowY: 'auto', maxWidth: '430px', margin: '0 auto' }}>
@@ -42,6 +75,15 @@ export default function OrderDetail({ order, onClose, onAdvance, onCancel }: Ord
             {icons.location}
             <span>{order.beach_location ?? 'Sin ubicación'}</span>
           </div>
+          {order.beach_location && geoPoint && (
+            <OrderMap lat={geoPoint.lat} lng={geoPoint.lng} label={order.beach_location} />
+          )}
+          {order.beach_location && isGeocoding && (
+            <p style={{ color: '#AAA', fontSize: 12, marginTop: 10 }}>Cargando mapa...</p>
+          )}
+          {order.beach_location && !isGeocoding && geoError && (
+            <p style={{ color: '#EF4444', fontSize: 12, marginTop: 10 }}>{geoError}</p>
+          )}
         </div>
 
         {order.notes && (

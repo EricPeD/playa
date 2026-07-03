@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #0A0A0A;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
 :root {
   color-scheme: light;
 }

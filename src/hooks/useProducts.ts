@@ -23,10 +23,11 @@ export function useProducts() {
   const [products, setProducts] = useState<ProductWithCategory[]>([]);
   const [categories, setCategories] = useState<{ id: number; name: string; emoji: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedOnce, setLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
-    setLoading(true);
+    if (!loadedOnce) setLoading(true);
     setError(null);
 
     const [{ data: prodData, error: prodError }, { data: catData, error: catError }] = await Promise.all([
@@ -45,6 +46,7 @@ export function useProducts() {
     if (prodError || catError) {
       setError(prodError?.message ?? catError?.message ?? 'Error al cargar productos.');
       setLoading(false);
+      setLoadedOnce(true);
       return;
     }
 
@@ -60,14 +62,15 @@ export function useProducts() {
     setProducts(normalized);
     setCategories((catData ?? []).map((cat: any) => ({ id: cat.id, name: cat.name, emoji: cat.emoji })));
     setLoading(false);
-  }, []);
+    setLoadedOnce(true);
+  }, [loadedOnce]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
   const updateProduct = useCallback(async (id: number, changes: Partial<Product>) => {
-    setLoading(true);
+    if (!loadedOnce) setLoading(true);
     setError(null);
 
     const { error } = await supabase
@@ -77,13 +80,13 @@ export function useProducts() {
 
     if (error) {
       setError(error.message);
-      setLoading(false);
+      if (!loadedOnce) setLoading(false);
       return false;
     }
 
     await fetchProducts();
     return true;
-  }, [fetchProducts]);
+  }, [fetchProducts, loadedOnce]);
 
   const toggleActive = useCallback(async (id: number, active: boolean) => {
     return updateProduct(id, { is_active: active });

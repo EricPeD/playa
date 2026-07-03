@@ -16,7 +16,7 @@ import S from '@/components/admin/styles';
 const TABS = [
   { key: 'dashboard', label: 'Inicio' },
   { key: 'orders', label: 'Pedidos' },
-  { key: 'operator', label: 'Operador' },
+  { key: 'operator', label: 'Repartidor' },
   { key: 'products', label: 'Productos' },
   { key: 'stats', label: 'Estadísticas' },
 ] as const;
@@ -37,15 +37,6 @@ export default function AdminApp() {
 
   return (
     <div style={S.app}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #0A0A0a; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        ::-webkit-scrollbar { display: none; }
-        button:active { transform: scale(0.97); }
-      `}</style>
-
       <Topbar title={TABS.find((item) => item.key === tab)?.label ?? 'Admin'} pendingCount={pendingCount} />
 
       {isLoading && (
