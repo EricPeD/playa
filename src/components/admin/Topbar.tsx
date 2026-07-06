@@ -10,8 +10,8 @@ export default function Topbar({ title, pendingCount }: TopbarProps) {
   return (
     <header style={S.topbar as CSSProperties}>
       <div>
-        <p style={S.topbarTitle}>🏖️ {title}</p>
-        <p style={S.topbarSub}>Chiringuito Beach Delivery</p>
+        <p style={S.topbarTitle as CSSProperties}>🏖️ {title}</p>
+        <p style={S.topbarSub as CSSProperties}>Chiringuito Beach Delivery</p>
       </div>
       <div style={S.liveChip as CSSProperties}>
         <div style={S.liveDot as CSSProperties} />

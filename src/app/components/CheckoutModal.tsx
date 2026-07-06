@@ -21,6 +21,7 @@ function CheckoutForm({
   total: number;
   onSuccess: (orderId: number) => void;
   onClose: () => void;
+  language: SupportedLanguage;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -151,6 +152,12 @@ export function CheckoutModal({
   }, [orderId, total]);
 
   const paymentElementOptions = { layout: 'tabs' as const };
+  const elementsOptions = clientSecret
+    ? {
+        clientSecret,
+        appearance: { theme: 'stripe' as const },
+      }
+    : undefined;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-4 py-4 sm:items-center">
@@ -188,7 +195,7 @@ export function CheckoutModal({
               </button>
             </div>
           ) : clientSecret ? (
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, paymentElement: paymentElementOptions }}>
+            <Elements stripe={stripePromise} options={elementsOptions}>
               <CheckoutForm orderId={orderId} total={total} onSuccess={onSuccess} onClose={onClose} language={language} />
             </Elements>
           ) : (

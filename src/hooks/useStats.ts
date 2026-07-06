@@ -55,6 +55,7 @@ export function useStats(period: Period) {
     pendingToPreparingMinutes: null,
     preparingToDeliveringMinutes: null,
     deliveringToDeliveredMinutes: null,
+    topProducts: [],
   });
   const [loading, setLoading] = useState(true);
   const [loadedOnce, setLoadedOnce] = useState(false);
@@ -150,7 +151,7 @@ export function useStats(period: Period) {
     deliveredOrders.forEach((order: any) => {
       const rows = trackingByOrder[order.id] ?? [];
       const createdAt = new Date(order.created_at).getTime();
-      const byStatus = Object.fromEntries(rows.map((row) => [row.status, new Date(row.created_at).getTime()]));
+      const byStatus = Object.fromEntries(rows.map((row: { status: string; created_at: string }) => [row.status, new Date(row.created_at).getTime()]));
       if (byStatus.delivered) {
         const diff = Math.max(0, Math.round((byStatus.delivered - createdAt) / 60000));
         deliveryDurations.push(diff);

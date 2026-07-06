@@ -15,9 +15,9 @@ export default function ProductRow({ product, onToggleActive, onAdjustStock, isL
 
   return (
     <div style={{ ...S.productRow, borderBottom: isLast ? 'none' : '1px solid #222' }}>
-      <div style={S.productEmoji}>{emoji}</div>
+      <div style={S.productEmoji as React.CSSProperties}>{emoji}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={S.productName}>{product.name}</p>
+        <p style={S.productName as React.CSSProperties}>{product.name}</p>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', color: '#666', fontSize: 12 }}>
           <span>{product.sku ?? '—'}</span>
           <span>·</span>
@@ -26,7 +26,7 @@ export default function ProductRow({ product, onToggleActive, onAdjustStock, isL
           <span>{formatCurrency(product.price)}</span>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-          <span style={S.stockBadge(stock)}>{stock} uds</span>
+          <span style={(S.stockBadge as (stock: number) => React.CSSProperties)(stock)}>{stock} uds</span>
           <button
             style={{ ...S.btnSecondary, padding: '6px 10px', fontSize: 13, borderRadius: 8 }}
             onClick={() => onAdjustStock(product.id, -1)}
@@ -42,11 +42,11 @@ export default function ProductRow({ product, onToggleActive, onAdjustStock, isL
         </div>
       </div>
       <button
-        style={S.toggleSwitch(product.is_active)}
+        style={(S.toggleSwitch as (active: boolean) => React.CSSProperties)(product.is_active)}
         onClick={() => onToggleActive(product.id, !product.is_active)}
         aria-label={product.is_active ? 'Desactivar producto' : 'Activar producto'}
       >
-        <div style={S.toggleKnob(product.is_active)} />
+        <div style={(S.toggleKnob as (active: boolean) => React.CSSProperties)(product.is_active)} />
       </button>
     </div>
   );

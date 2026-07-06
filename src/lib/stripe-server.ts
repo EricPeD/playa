@@ -7,5 +7,5 @@ if (!stripeSecretKey && process.env.NODE_ENV !== 'production') {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-04-10',
+  apiVersion: '2026-06-24.dahlia',
 });

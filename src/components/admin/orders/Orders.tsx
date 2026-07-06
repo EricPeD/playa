@@ -29,14 +29,14 @@ export default function Orders({ orders, onAdvance, onCancel }: OrdersProps) {
   }, [filter, orders]);
 
   return (
-    <div style={S.section}>
+    <div style={S.section as React.CSSProperties}>
       <OrderFilters filter={filter} counts={counts} onChange={setFilter} />
 
       {filtered.length === 0 && (
-        <div style={S.emptyState}>
-          <div style={S.emptyIcon}>📭</div>
-          <p style={S.emptyTitle}>Sin pedidos</p>
-          <p style={S.emptyText}>No hay pedidos en este estado.</p>
+        <div style={S.emptyState as React.CSSProperties}>
+          <div style={S.emptyIcon as React.CSSProperties}>📭</div>
+          <p style={S.emptyTitle as React.CSSProperties}>Sin pedidos</p>
+          <p style={S.emptyText as React.CSSProperties}>No hay pedidos en este estado.</p>
         </div>
       )}
 

@@ -28,9 +28,9 @@ export default function Products({ products, categories, onToggleActive, onAdjus
   }, [products, categoryFilter, search]);
 
   return (
-    <div style={S.section}>
+    <div style={S.section as React.CSSProperties}>
       <input
-        style={S.input}
+        style={S.input as React.CSSProperties}
         placeholder="Buscar producto o SKU…"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
@@ -42,10 +42,10 @@ export default function Products({ products, categories, onToggleActive, onAdjus
         onSelect={setCategoryFilter}
       />
 
-      <div style={S.card}>
+      <div style={S.card as React.CSSProperties}>
         {filtered.length === 0 ? (
-          <div style={{ ...S.emptyState, padding: '24px 0' }}>
-            <p style={S.emptyTitle}>Sin resultados</p>
+          <div style={{ ...(S.emptyState as React.CSSProperties), padding: '24px 0' }}>
+            <p style={S.emptyTitle as React.CSSProperties}>Sin resultados</p>
           </div>
         ) : (
           filtered.map((product, index) => (

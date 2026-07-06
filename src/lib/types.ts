@@ -23,6 +23,7 @@ export interface Product {
   is_featured?: boolean;
   is_pack?: boolean;
   unit?: string | null;
+  sku?: string | null;
   sort_order?: number;
 }
 

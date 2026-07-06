@@ -50,28 +50,28 @@ export default function OrderDetail({ order, onClose, onAdvance, onCancel }: Ord
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#111', zIndex: 200, overflowY: 'auto', maxWidth: '430px', margin: '0 auto' }}>
-      <div style={S.topbar}>
+      <div style={S.topbar as React.CSSProperties}>
         <div>
-          <p style={S.topbarTitle}>Pedido #{order.id}</p>
-          <p style={S.topbarSub}>{order.customer_name}</p>
+          <p style={S.topbarTitle as React.CSSProperties}>Pedido #{order.id}</p>
+          <p style={S.topbarSub as React.CSSProperties}>{order.customer_name}</p>
         </div>
         <button onClick={onClose} style={{ ...S.btnSecondary, padding: '8px 12px' }}>
           {icons.close}
         </button>
       </div>
 
-      <div style={S.section}>
+      <div style={S.section as React.CSSProperties}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center' }}>
-          <span style={S.statusBadge(order.status)}>{cfg.label}</span>
-          <span style={S.timeBadge}>{elapsed(order.created_at)} atrás</span>
-          <span style={{ ...S.payBadge(order.paid), marginLeft: 'auto' }}>
+          <span style={(S.statusBadge as (status: string) => React.CSSProperties)(order.status)}>{cfg.label}</span>
+          <span style={S.timeBadge as React.CSSProperties}>{elapsed(order.created_at)} atrás</span>
+          <span style={{ ...(S.payBadge as (paid: boolean) => React.CSSProperties)(order.paid), marginLeft: 'auto' }}>
             {order.paid ? 'Pagado' : 'Pendiente'} · {order.payment_method ?? 'N/A'}
           </span>
         </div>
 
-        <div style={S.card}>
-          <p style={S.sectionTitle}>Localización</p>
-          <div style={S.locationRow}>
+        <div style={S.card as React.CSSProperties}>
+          <p style={S.sectionTitle as React.CSSProperties}>Localización</p>
+          <div style={S.locationRow as React.CSSProperties}>
             {icons.location}
             <span>{order.beach_location ?? 'Sin ubicación'}</span>
           </div>
@@ -87,29 +87,29 @@ export default function OrderDetail({ order, onClose, onAdvance, onCancel }: Ord
         </div>
 
         {order.notes && (
-          <div style={S.notesBox}>
+          <div style={S.notesBox as React.CSSProperties}>
             {icons.warn}
             <span>{order.notes}</span>
           </div>
         )}
 
-        <div style={S.card}>
-          <p style={S.sectionTitle}>Productos</p>
+        <div style={S.card as React.CSSProperties}>
+          <p style={S.sectionTitle as React.CSSProperties}>Productos</p>
           {order.items.map((item) => (
-            <div key={item.id} style={S.itemRow}>
+            <div key={item.id} style={S.itemRow as React.CSSProperties}>
               <span>{item.qty}× {item.name}</span>
               <span style={{ color: '#F1F0ED', fontWeight: 600 }}>{formatCurrency(item.qty * item.price)}</span>
             </div>
           ))}
-          <div style={S.divider} />
-          <div style={S.totalRow}>
+          <div style={S.divider as React.CSSProperties} />
+          <div style={S.totalRow as React.CSSProperties}>
             <span style={{ fontSize: 13, color: '#666' }}>Total</span>
-            <span style={S.totalAmount}>{formatCurrency(order.total)}</span>
+            <span style={S.totalAmount as React.CSSProperties}>{formatCurrency(order.total)}</span>
           </div>
         </div>
 
-        <div style={S.card}>
-          <p style={S.sectionTitle}>Cliente</p>
+        <div style={S.card as React.CSSProperties}>
+          <p style={S.sectionTitle as React.CSSProperties}>Cliente</p>
           <p style={{ fontSize: 16, fontWeight: 600, color: '#F1F0ED', margin: '0 0 8px' }}>{order.customer_name}</p>
           <a href={`tel:${order.customer_phone ?? ''}`} style={{ textDecoration: 'none' }}>
             <div style={{ ...S.btnSecondary, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', borderRadius: 10 }}>
@@ -122,7 +122,7 @@ export default function OrderDetail({ order, onClose, onAdvance, onCancel }: Ord
         {cfg.next && (
           <button
             onClick={() => onAdvance(order.id, cfg.next)}
-            style={S.opBtn(nextCfg?.color ?? '#6B7280')}
+            style={(S.opBtn as (color: string) => React.CSSProperties)(nextCfg?.color ?? '#6B7280')}
           >
             → {cfg.nextLabel}
           </button>

@@ -16,17 +16,17 @@ export default function Operator({ orders, onAdvance }: OperatorProps) {
   if (activeOrders.length === 0) {
     return (
       <div style={{ ...S.section, paddingTop: 48 }}>
-        <div style={S.emptyState}>
-          <div style={S.emptyIcon}>🏖️</div>
-          <p style={S.emptyTitle}>Sin pedidos activos</p>
-          <p style={S.emptyText}>Cuando lleguen pedidos aparecerán aquí para gestionarlos rápidamente.</p>
+        <div style={S.emptyState as React.CSSProperties}>
+          <div style={S.emptyIcon as React.CSSProperties}>🏖️</div>
+          <p style={S.emptyTitle as React.CSSProperties}>Sin pedidos activos</p>
+          <p style={S.emptyText as React.CSSProperties}>Cuando lleguen pedidos aparecerán aquí para gestionarlos rápidamente.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={S.section}>
+    <div style={S.section as React.CSSProperties}>
       <div style={{
         background: 'rgba(255,107,43,0.08)',
         border: '1px solid rgba(255,107,43,0.2)',
@@ -45,9 +45,9 @@ export default function Operator({ orders, onAdvance }: OperatorProps) {
         const nextCfg = cfg.next ? getStatusConfig(cfg.next) : null;
         return (
           <div key={order.id} style={{ ...S.operatorCard, borderLeft: `5px solid ${cfg.color}` }}>
-            <p style={S.opOrderId}>PEDIDO #{order.id} · {elapsed(order.created_at)}</p>
-            <p style={S.opName}>{order.customer_name}</p>
-            <div style={S.opLocation}>
+            <p style={S.opOrderId as React.CSSProperties}>PEDIDO #{order.id} · {elapsed(order.created_at)}</p>
+            <p style={S.opName as React.CSSProperties}>{order.customer_name}</p>
+            <div style={S.opLocation as React.CSSProperties}>
               {icons.location}
               <span>{order.beach_location ?? 'Sin ubicación'}</span>
             </div>
@@ -59,9 +59,9 @@ export default function Operator({ orders, onAdvance }: OperatorProps) {
               </div>
             )}
 
-            <div style={S.opItems}>
+            <div style={S.opItems as React.CSSProperties}>
               {order.items.map((item) => (
-                <div key={item.id} style={S.opItem}>
+                <div key={item.id} style={S.opItem as React.CSSProperties}>
                   <span><strong style={{ color: '#FF6B2B' }}>{item.qty}×</strong> {item.name}</span>
                   <span style={{ fontWeight: 600 }}>{formatCurrency(item.qty * item.price)}</span>
                 </div>
@@ -69,15 +69,15 @@ export default function Operator({ orders, onAdvance }: OperatorProps) {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={S.opTotal}>{formatCurrency(order.total)}</span>
-              <span style={S.payBadge(order.paid)}>
+              <span style={S.opTotal as React.CSSProperties}>{formatCurrency(order.total)}</span>
+              <span style={(S.payBadge as (paid: boolean) => React.CSSProperties)(order.paid)}>
                 {order.paid ? 'Pagado' : 'Sin cobrar'} · {order.payment_method ?? 'N/A'}
               </span>
             </div>
 
             {cfg.next && (
               <button
-                style={S.opBtn(nextCfg?.color ?? '#6B7280')}
+                style={(S.opBtn as (color: string) => React.CSSProperties)(nextCfg?.color ?? '#6B7280')}
                 onClick={() => onAdvance(order.id, cfg.next)}
               >
                 {cfg.nextLabel} →

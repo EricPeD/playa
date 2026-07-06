@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_LANGUAGE, getStoredLanguage, getUiText, normalizeLanguage, type SupportedLanguage } from '@/lib/i18n';
+import { clearCartStorage } from '@/lib/cart';
 
 interface OrderSuccessPageProps {
   searchParams: {
@@ -22,6 +23,7 @@ export default function OrderSuccessPage({ searchParams }: OrderSuccessPageProps
     const fromUrl = normalizeLanguage(searchParams.lang);
     const fromStorage = getStoredLanguage();
     setLanguage(fromUrl === DEFAULT_LANGUAGE && !fromStorage ? fromUrl : (fromStorage ?? fromUrl));
+    clearCartStorage();
   }, [searchParams.lang]);
 
   const t = useMemo(() => (key: string) => getUiText(language, key), [language]);

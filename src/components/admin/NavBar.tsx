@@ -15,7 +15,7 @@ export default function NavBar({ tabs, activeTab, onTabChange, pendingCount }: N
       {tabs.map((tab) => (
         <button
           key={tab.key}
-          style={S.navItem(tab.key === activeTab) as CSSProperties}
+          style={(S.navItem as (active: boolean) => CSSProperties)(tab.key === activeTab)}
           onClick={() => onTabChange(tab.key)}
           aria-label={tab.label}
         >

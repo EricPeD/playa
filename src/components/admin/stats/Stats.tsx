@@ -17,12 +17,12 @@ type StatsProps = {
 
 export default function Stats({ period, onPeriodChange, salesByDay, paymentBreakdown, hourlyPeak, summary }: StatsProps) {
   return (
-    <div style={S.section}>
-      <div style={S.filterRow}>
+    <div style={S.section as React.CSSProperties}>
+      <div style={S.filterRow as React.CSSProperties}>
         {(['hoy', 'semana', 'mes'] as const).map((option) => (
           <button
             key={option}
-            style={S.filterChip(period === option)}
+            style={(S.filterChip as (active: boolean) => React.CSSProperties)(period === option)}
             onClick={() => onPeriodChange(option)}
           >
             {option.charAt(0).toUpperCase() + option.slice(1)}
@@ -30,38 +30,38 @@ export default function Stats({ period, onPeriodChange, salesByDay, paymentBreak
         ))}
       </div>
 
-      <div style={S.metricGrid}>
-        <div style={S.metricCard('#FF6B2B')}>
-          <p style={S.metricLabel}>Ventas</p>
-          <p style={S.metricValue}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(summary.total)}</p>
+      <div style={S.metricGrid as React.CSSProperties}>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#FF6B2B')}>
+          <p style={S.metricLabel as React.CSSProperties}>Ventas</p>
+          <p style={S.metricValue as React.CSSProperties}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(summary.total)}</p>
         </div>
-        <div style={S.metricCard('#22C55E')}>
-          <p style={S.metricLabel}>Pedidos</p>
-          <p style={S.metricValue}>{summary.orders}</p>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#22C55E')}>
+          <p style={S.metricLabel as React.CSSProperties}>Pedidos</p>
+          <p style={S.metricValue as React.CSSProperties}>{summary.orders}</p>
         </div>
-        <div style={S.metricCard('#3B82F6')}>
-          <p style={S.metricLabel}>Ticket medio</p>
-          <p style={S.metricValue}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(summary.avgTicket)}</p>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#3B82F6')}>
+          <p style={S.metricLabel as React.CSSProperties}>Ticket medio</p>
+          <p style={S.metricValue as React.CSSProperties}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(summary.avgTicket)}</p>
         </div>
-        <div style={S.metricCard('#8B5CF6')}>
-          <p style={S.metricLabel}>Tiempo medio de entrega</p>
-          <p style={S.metricValue}>{summary.avgDeliveryMinutes > 0 ? `${Math.round(summary.avgDeliveryMinutes)} min` : 'N/A'}</p>
-          <p style={S.metricSub}>Desde pedido hasta entrega</p>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#8B5CF6')}>
+          <p style={S.metricLabel as React.CSSProperties}>Tiempo medio de entrega</p>
+          <p style={S.metricValue as React.CSSProperties}>{summary.avgDeliveryMinutes > 0 ? `${Math.round(summary.avgDeliveryMinutes)} min` : 'N/A'}</p>
+          <p style={S.metricSub as React.CSSProperties}>Desde pedido hasta entrega</p>
         </div>
       </div>
 
-      <div style={S.metricGrid}>
-        <div style={S.metricCard('#F59E0B')}>
-          <p style={S.metricLabel}>Pendiente → Preparando</p>
-          <p style={S.metricValue}>{summary.pendingToPreparingMinutes !== null ? `${summary.pendingToPreparingMinutes} min` : 'N/A'}</p>
+      <div style={S.metricGrid as React.CSSProperties}>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#F59E0B')}>
+          <p style={S.metricLabel as React.CSSProperties}>Pendiente → Preparando</p>
+          <p style={S.metricValue as React.CSSProperties}>{summary.pendingToPreparingMinutes !== null ? `${summary.pendingToPreparingMinutes} min` : 'N/A'}</p>
         </div>
-        <div style={S.metricCard('#3B82F6')}>
-          <p style={S.metricLabel}>Preparando → En reparto</p>
-          <p style={S.metricValue}>{summary.preparingToDeliveringMinutes !== null ? `${summary.preparingToDeliveringMinutes} min` : 'N/A'}</p>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#3B82F6')}>
+          <p style={S.metricLabel as React.CSSProperties}>Preparando → En reparto</p>
+          <p style={S.metricValue as React.CSSProperties}>{summary.preparingToDeliveringMinutes !== null ? `${summary.preparingToDeliveringMinutes} min` : 'N/A'}</p>
         </div>
-        <div style={S.metricCard('#22C55E')}>
-          <p style={S.metricLabel}>Reparto → Entregado</p>
-          <p style={S.metricValue}>{summary.deliveringToDeliveredMinutes !== null ? `${summary.deliveringToDeliveredMinutes} min` : 'N/A'}</p>
+        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#22C55E')}>
+          <p style={S.metricLabel as React.CSSProperties}>Reparto → Entregado</p>
+          <p style={S.metricValue as React.CSSProperties}>{summary.deliveringToDeliveredMinutes !== null ? `${summary.deliveringToDeliveredMinutes} min` : 'N/A'}</p>
         </div>
       </div>
 
@@ -69,8 +69,8 @@ export default function Stats({ period, onPeriodChange, salesByDay, paymentBreak
       <WeekChart salesByDay={salesByDay} />
       <PeakHours hourlyPeak={hourlyPeak} />
 
-      <div style={S.card}>
-        <p style={S.sectionTitle}>{PRODUCTS_TITLE}</p>
+      <div style={S.card as React.CSSProperties}>
+        <p style={S.sectionTitle as React.CSSProperties}>{PRODUCTS_TITLE}</p>
         {summary.topProducts.length === 0 ? (
           <p style={{ color: '#888', marginTop: 6 }}>No hay datos de productos vendidos.</p>
         ) : (

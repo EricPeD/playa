@@ -12,7 +12,7 @@ export default function CategoryFilter({ categories, activeCategory, onSelect }:
       {categories.map((category) => (
         <button
           key={category}
-          style={S.filterChip(activeCategory === category)}
+          style={(S.filterChip as (active: boolean) => React.CSSProperties)(activeCategory === category)}
           onClick={() => onSelect(category)}
         >
           {category}

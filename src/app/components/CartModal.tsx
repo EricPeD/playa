@@ -6,6 +6,7 @@ import { PhoneModal } from './PhoneModal';
 import { CheckoutModal } from './CheckoutModal';
 import { submitOrder } from '@/lib/orders';
 import { getUiText, type SupportedLanguage } from '@/lib/i18n';
+import { clearCartStorage } from '@/lib/cart';
 
 // ── CartModal ──────────────────────────────────────────────────────────────────
 export function CartModal({
@@ -313,6 +314,7 @@ export function CartModal({
           total={total}
           onSuccess={(orderId) => {
             console.log('[CartModal] Pago completado para orderId:', orderId);
+            clearCartStorage();
             setShowCheckout(false);
             onPlaceOrder(orderId);
           }}

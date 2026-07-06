@@ -257,7 +257,7 @@ export async function saveWebhookEvent(
           payload,
           processed_at: new Date().toISOString(),
         },
-        { onConflict: 'stripe_event_id', ignore: true },
+        { onConflict: 'stripe_event_id' },
       )
       .select('id');
 

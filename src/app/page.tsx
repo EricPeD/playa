@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Category, Product, CartItem } from '@/lib/types';
 import { fetchCategories, requestGPS } from '@/lib/helpers';
+import { CART_STORAGE_KEY, clearCartStorage, readCartFromStorage, writeCartToStorage } from '@/lib/cart';
 import { IcoBox, IcoCart, IcoCheck, IcoPin, IcoPinOff } from '@/app/components/Icons';
 import CategoryModal from '@/app/components/CategoryModal';
 import { CAT_COLORS, CAT_ICONS } from './components/colors';
@@ -63,8 +64,6 @@ export default function HomePage() {
   const [loadingCats, setLoadingCats] = useState(true);
   const [catsError, setCatsError] = useState<string | null>(null);
 
-  const CART_STORAGE_KEY = 'playa-cart';
-
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -93,12 +92,9 @@ export default function HomePage() {
         setLanguageSelected(true);
       }
 
-      const storedCart = window.localStorage.getItem(CART_STORAGE_KEY);
-      if (storedCart) {
-        const parsedCart = JSON.parse(storedCart) as CartItem[];
-        if (Array.isArray(parsedCart)) {
-          setCart(parsedCart);
-        }
+      const storedCart = readCartFromStorage();
+      if (storedCart.length > 0) {
+        setCart(storedCart);
       }
     } catch (error) {
       console.error('[HomePage] Error al restaurar storage:', error);
@@ -109,7 +105,11 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!hydrated || typeof window === 'undefined') return;
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    if (cart.length === 0) {
+      clearCartStorage();
+    } else {
+      writeCartToStorage(cart);
+    }
   }, [cart, hydrated]);
 
   // Cargar categorías (solo cuando ya hay idioma seleccionado)
@@ -212,6 +212,7 @@ export default function HomePage() {
     console.groupEnd();
 
     setCart([]);
+    clearCartStorage();
     setCartOpen(false);
     setOrderDone(true);
     setTimeout(() => setOrderDone(false), 4000);

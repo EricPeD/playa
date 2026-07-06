@@ -13,13 +13,13 @@ import Products from '@/components/admin/products/Products';
 import Stats from '@/components/admin/stats/Stats';
 import S from '@/components/admin/styles';
 
-const TABS = [
+const TABS: Array<{ key: string; label: string }> = [
   { key: 'dashboard', label: 'Inicio' },
   { key: 'orders', label: 'Pedidos' },
   { key: 'operator', label: 'Repartidor' },
   { key: 'products', label: 'Productos' },
   { key: 'stats', label: 'Estadísticas' },
-] as const;
+];
 
 type TabKey = (typeof TABS)[number]['key'];
 
@@ -36,7 +36,7 @@ export default function AdminApp() {
   const errorMessage = ordersError ?? productsError ?? statsError;
 
   return (
-    <div style={S.app}>
+    <div style={S.app as React.CSSProperties}>
       <Topbar title={TABS.find((item) => item.key === tab)?.label ?? 'Admin'} pendingCount={pendingCount} />
 
       {isLoading && (

@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
 
-const S: Record<string, CSSProperties | ((arg: unknown) => CSSProperties)> = {
+type StyleValue = CSSProperties | ((...args: any[]) => CSSProperties);
+
+const S: Record<string, StyleValue> = {
   app: {
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     background: '#111111',
