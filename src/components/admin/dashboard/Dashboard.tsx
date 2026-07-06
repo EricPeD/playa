@@ -8,9 +8,11 @@ type DashboardProps = {
   stats: { total: number; orders: number; avgTicket: number; profit: number };
   salesByDay: SalesByDay[];
   hourlyPeak: HourlyPeak[];
+  publicBlocked: boolean;
+  onToggleSiteBlocked: (nextValue: boolean) => Promise<boolean> | boolean;
 };
 
-export default function Dashboard({ orders, stats, salesByDay, hourlyPeak }: DashboardProps) {
+export default function Dashboard({ orders, stats, salesByDay, hourlyPeak, publicBlocked, onToggleSiteBlocked }: DashboardProps) {
   const pending = orders.filter((o) => o.status === 'pending').length;
   const preparing = orders.filter((o) => o.status === 'preparing').length;
   const delivering = orders.filter((o) => o.status === 'delivering').length;
@@ -23,6 +25,32 @@ export default function Dashboard({ orders, stats, salesByDay, hourlyPeak }: Das
 
   return (
     <div style={S.section}>
+      <div style={{ ...S.card, marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <div>
+            <p style={S.sectionTitle}>Estado del sitio</p>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#8B857A' }}>
+              {publicBlocked ? 'El sitio está cerrado para clientes.' : 'El sitio está abierto para clientes.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void onToggleSiteBlocked(!publicBlocked)}
+            style={{
+              border: 'none',
+              borderRadius: 999,
+              padding: '8px 14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              color: publicBlocked ? '#fff' : '#1A1A1A',
+              background: publicBlocked ? '#E65100' : '#F3F1EB',
+            }}
+          >
+            {publicBlocked ? 'Cerrar sitio' : 'Abrir sitio'}
+          </button>
+        </div>
+      </div>
+
       <p style={S.sectionTitle}>Resumen del día</p>
       <div style={S.metricGrid}>
         <div style={S.metricCard('#F59E0B')}>

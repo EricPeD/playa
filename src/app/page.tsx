@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Category, Product, CartItem } from '@/lib/types';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { fetchCategories, requestGPS } from '@/lib/helpers';
 import { IcoBox, IcoCart, IcoCheck, IcoPin, IcoPinOff } from '@/app/components/Icons';
 import CategoryModal from '@/app/components/CategoryModal';
@@ -78,6 +79,7 @@ export default function HomePage() {
 
   const [language, setLanguage] = useState<SupportedLanguage>(DEFAULT_LANGUAGE);
   const [languageSelected, setLanguageSelected] = useState(false);
+  const { publicBlocked, loading: settingsLoading } = useSiteSettings();
 
   const t = useCallback((key: string) => getUiText(language, key), [language]);
 
@@ -223,6 +225,31 @@ export default function HomePage() {
   useEffect(() => {
     console.log('gpsData actualizado:', gpsData);
   }, [gpsData]);
+
+  if (settingsLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center px-6">
+        <div className="text-center">
+          <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-[0.25em]">Playa Delivery</p>
+          <p className="mt-3 text-[14px] text-[#1A1A1A]">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (publicBlocked) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center px-6">
+        <div className="w-full max-w-md rounded-[24px] border border-[#E8E5E0] bg-white p-6 text-center shadow-sm">
+          <p className="text-[10px] font-bold text-[#9B9589] uppercase tracking-[0.25em]">Playa Delivery</p>
+          <h1 className="mt-3 text-[24px] font-black text-[#1A1A1A]">Abriremos de nuevo mañana</h1>
+          <p className="mt-3 text-[14px] leading-relaxed text-[#6F6A61]">
+            El servicio está temporalmente cerrado. Gracias por tu comprensión.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // ── Pantalla de selección de idioma ──
   if (!languageSelected) {

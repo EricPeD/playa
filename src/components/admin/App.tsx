@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { useStats } from '@/hooks/useStats';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Topbar from '@/components/admin/Topbar';
 import NavBar from '@/components/admin/NavBar';
 import Dashboard from '@/components/admin/dashboard/Dashboard';
@@ -29,10 +30,11 @@ export default function AdminApp() {
   const { orders, loading: ordersLoading, error: ordersError, advanceOrder, cancelOrder, refresh: refreshOrders } = useOrders();
   const { products, categories, loading: productsLoading, error: productsError, toggleActive, adjustStock } = useProducts();
   const { salesByDay, paymentBreakdown, hourlyPeak, statusBreakdown, beachRevenue, summary, loading: statsLoading, error: statsError, refresh: refreshStats } = useStats(statsPeriod);
+  const { publicBlocked, loading: settingsLoading, setPublicBlocked } = useSiteSettings();
 
   const pendingCount = useMemo(() => orders.filter((order) => order.status === 'pending').length, [orders]);
 
-  const isLoading = ordersLoading || productsLoading || statsLoading;
+  const isLoading = ordersLoading || productsLoading || statsLoading || settingsLoading;
   const errorMessage = ordersError ?? productsError ?? statsError;
 
   return (
@@ -53,7 +55,16 @@ export default function AdminApp() {
 
       {!isLoading && !errorMessage && (
         <>
-          {tab === 'dashboard' && <Dashboard orders={orders} stats={summary} salesByDay={salesByDay} hourlyPeak={hourlyPeak} />}
+          {tab === 'dashboard' && (
+            <Dashboard
+              orders={orders}
+              stats={summary}
+              salesByDay={salesByDay}
+              hourlyPeak={hourlyPeak}
+              publicBlocked={publicBlocked}
+              onToggleSiteBlocked={setPublicBlocked}
+            />
+          )}
           {tab === 'orders' && (
             <Orders orders={orders} onAdvance={advanceOrder} onCancel={cancelOrder} refreshOrders={refreshOrders} />
           )}
