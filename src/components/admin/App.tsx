@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { useStats } from '@/hooks/useStats';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Topbar from '@/components/admin/Topbar';
 import NavBar from '@/components/admin/NavBar';
 import Dashboard from '@/components/admin/dashboard/Dashboard';
@@ -13,7 +14,11 @@ import Products from '@/components/admin/products/Products';
 import Stats from '@/components/admin/stats/Stats';
 import S from '@/components/admin/styles';
 
+<<<<<<< HEAD
 const TABS: Array<{ key: string; label: string }> = [
+=======
+const TABS: { key: string; label: string }[] = [
+>>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
   { key: 'dashboard', label: 'Inicio' },
   { key: 'orders', label: 'Pedidos' },
   { key: 'operator', label: 'Repartidor' },
@@ -28,11 +33,12 @@ export default function AdminApp() {
   const [statsPeriod, setStatsPeriod] = useState<'hoy' | 'semana' | 'mes'>('hoy');
   const { orders, loading: ordersLoading, error: ordersError, advanceOrder, cancelOrder, refresh: refreshOrders } = useOrders();
   const { products, categories, loading: productsLoading, error: productsError, toggleActive, adjustStock } = useProducts();
-  const { salesByDay, paymentBreakdown, hourlyPeak, summary, loading: statsLoading, error: statsError, refresh: refreshStats } = useStats(statsPeriod);
+  const { salesByDay, paymentBreakdown, hourlyPeak, statusBreakdown, beachRevenue, summary, loading: statsLoading, error: statsError, refresh: refreshStats } = useStats(statsPeriod);
+  const { publicBlocked, loading: settingsLoading, setPublicBlocked } = useSiteSettings();
 
   const pendingCount = useMemo(() => orders.filter((order) => order.status === 'pending').length, [orders]);
 
-  const isLoading = ordersLoading || productsLoading || statsLoading;
+  const isLoading = ordersLoading || productsLoading || statsLoading || settingsLoading;
   const errorMessage = ordersError ?? productsError ?? statsError;
 
   return (
@@ -53,7 +59,16 @@ export default function AdminApp() {
 
       {!isLoading && !errorMessage && (
         <>
-          {tab === 'dashboard' && <Dashboard orders={orders} stats={summary} salesByDay={salesByDay} />}
+          {tab === 'dashboard' && (
+            <Dashboard
+              orders={orders}
+              stats={summary}
+              salesByDay={salesByDay}
+              hourlyPeak={hourlyPeak}
+              publicBlocked={publicBlocked}
+              onToggleSiteBlocked={setPublicBlocked}
+            />
+          )}
           {tab === 'orders' && (
             <Orders orders={orders} onAdvance={advanceOrder} onCancel={cancelOrder} refreshOrders={refreshOrders} />
           )}
@@ -68,6 +83,8 @@ export default function AdminApp() {
               salesByDay={salesByDay}
               paymentBreakdown={paymentBreakdown}
               hourlyPeak={hourlyPeak}
+              statusBreakdown={statusBreakdown}
+              beachRevenue={beachRevenue}
               summary={summary}
             />
           )}

@@ -1,8 +1,12 @@
 import type { CSSProperties } from 'react';
 
+<<<<<<< HEAD
 type StyleValue = CSSProperties | ((...args: any[]) => CSSProperties);
 
 const S: Record<string, StyleValue> = {
+=======
+const S: Record<string, any> = {
+>>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
   app: {
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     background: '#111111',

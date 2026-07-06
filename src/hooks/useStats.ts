@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabaseClient';
 export type SalesByDay = { day: string; total: number };
 export type PaymentBreakdown = { method: string; count: number; total: number };
 export type HourlyPeak = { hour: string; count: number };
+export type StatusBreakdown = { status: string; count: number };
+export type BeachRevenue = { beach_location: string; total: number };
 
 type Period = 'hoy' | 'semana' | 'mes';
 
@@ -23,6 +25,14 @@ function toPeriodRange(period: Period) {
 
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   return { start: startOfMonth.toISOString(), end: now.toISOString() };
+}
+
+function isRevenueOrder(order: any) {
+  const normalizedStatus = (order?.status ?? '').toLowerCase();
+  const hasPaidAt = Boolean(order?.paid_at);
+  const completedStatuses = ['paid', 'confirmed', 'preparing', 'delivering', 'delivered'];
+
+  return normalizedStatus !== 'cancelled' && (hasPaidAt || completedStatuses.includes(normalizedStatus));
 }
 
 export type TopProduct = {
@@ -46,6 +56,8 @@ export function useStats(period: Period) {
   const [salesByDay, setSalesByDay] = useState<SalesByDay[]>([]);
   const [paymentBreakdown, setPaymentBreakdown] = useState<PaymentBreakdown[]>([]);
   const [hourlyPeak, setHourlyPeak] = useState<HourlyPeak[]>([]);
+  const [statusBreakdown, setStatusBreakdown] = useState<StatusBreakdown[]>([]);
+  const [beachRevenue, setBeachRevenue] = useState<BeachRevenue[]>([]);
   const [summary, setSummary] = useState<SummaryMetrics>({
     total: 0,
     orders: 0,
@@ -69,8 +81,7 @@ export function useStats(period: Period) {
 
     const ordersResult = await supabase
       .from('orders')
-      .select('id, total, payment_method, created_at')
-      .eq('status', 'delivered')
+      .select('id, total, payment_method, created_at, status, beach_location, paid_at')
       .gte('created_at', range.start)
       .lte('created_at', range.end)
       .order('created_at', { ascending: true });
@@ -82,41 +93,37 @@ export function useStats(period: Period) {
       return;
     }
 
-    const deliveredOrders = Array.isArray(ordersResult.data) ? ordersResult.data : [];
-    const deliveredOrderIds = deliveredOrders.map((order: any) => order.id).filter(Boolean);
+    const revenueOrders = (Array.isArray(ordersResult.data) ? ordersResult.data : []).filter(isRevenueOrder);
+    const paidOrderIds = revenueOrders.map((order: any) => order.id).filter(Boolean);
 
-    let trackingResult: any = { data: [], error: null };
     let itemsResult: any = { data: [], error: null };
 
-    if (deliveredOrderIds.length > 0) {
-      [trackingResult, itemsResult] = await Promise.all([
-        supabase
-          .from('delivery_tracking')
-          .select('order_id, status, created_at')
-          .in('order_id', deliveredOrderIds),
-        supabase
-          .from('order_items')
-          .select('order_id, product_id, quantity, products(name)')
-          .in('order_id', deliveredOrderIds),
-      ]);
+    if (paidOrderIds.length > 0) {
+      itemsResult = await supabase
+        .from('order_items')
+        .select('order_id, product_id, quantity, products(name)')
+        .in('order_id', paidOrderIds);
     }
 
-    if (trackingResult.error || itemsResult.error) {
-      setError(trackingResult.error?.message ?? itemsResult.error?.message ?? 'Error al cargar estadísticas.');
+    if (itemsResult.error) {
+      setError(itemsResult.error.message ?? 'Error al cargar estadísticas.');
       setLoading(false);
       setLoadedOnce(true);
       return;
     }
-    const total = deliveredOrders.reduce((sum, order: any) => sum + parseFloat(order.total ?? 0), 0);
-    const ordersCount = deliveredOrders.length;
+
+    const total = revenueOrders.reduce((sum: number, order: any) => sum + parseFloat(order.total ?? 0), 0);
+    const ordersCount = revenueOrders.length;
     const avgTicket = ordersCount > 0 ? total / ordersCount : 0;
     const profit = total * 0.28;
 
     const paymentMap: Record<string, PaymentBreakdown> = {};
     const hourlyMap: Record<string, number> = {};
     const dayMap: Record<string, number> = {};
+    const statusMap: Record<string, number> = {};
+    const beachMap: Record<string, number> = {};
 
-    deliveredOrders.forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       const method = order.payment_method ?? 'Desconocido';
       const paymentKey = method.toLowerCase();
       paymentMap[paymentKey] = paymentMap[paymentKey] || { method, count: 0, total: 0 };
@@ -129,20 +136,11 @@ export function useStats(period: Period) {
 
       const dayKey = createdAt.toISOString().slice(0, 10);
       dayMap[dayKey] = (dayMap[dayKey] ?? 0) + parseFloat(order.total ?? 0);
-    });
 
-    const trackingRows = Array.isArray(trackingResult.data) ? trackingResult.data : [];
-    const trackingByOrder = trackingRows.reduce((acc: Record<number, Array<{ status: string; created_at: string; order_created_at: string | null }>>, row: any) => {
-      const set = acc[row.order_id] ?? [];
-      set.push({
-        status: row.status,
-        created_at: row.created_at,
-        order_created_at: row.orders?.created_at ?? null,
-      });
-      acc[row.order_id] = set;
-      return acc;
-    }, {} as Record<number, Array<{ status: string; created_at: string; order_created_at: string | null }>>);
+      const statusKey = (order.status ?? 'pending').toLowerCase();
+      statusMap[statusKey] = (statusMap[statusKey] ?? 0) + 1;
 
+<<<<<<< HEAD
     const deliveryDurations: number[] = [];
     const pendingToPreparing: number[] = [];
     const preparingToDelivering: number[] = [];
@@ -166,6 +164,10 @@ export function useStats(period: Period) {
       if (byStatus.delivering && byStatus.delivered) {
         deliveringToDelivered.push(Math.max(0, Math.round((byStatus.delivered - byStatus.delivering) / 60000)));
       }
+=======
+      const beachKey = (order.beach_location ?? 'Sin ubicación').trim() || 'Sin ubicación';
+      beachMap[beachKey] = (beachMap[beachKey] ?? 0) + parseFloat(order.total ?? 0);
+>>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
     });
 
     const itemRows = Array.isArray(itemsResult.data) ? itemsResult.data : [];
@@ -197,15 +199,17 @@ export function useStats(period: Period) {
     setSalesByDay(salesByDayList);
     setPaymentBreakdown(Object.values(paymentMap));
     setHourlyPeak(hourlyPeakList);
+    setStatusBreakdown(Object.entries(statusMap).map(([status, count]) => ({ status, count })));
+    setBeachRevenue(Object.entries(beachMap).map(([beach_location, total]) => ({ beach_location, total })));
     setSummary({
       total,
       orders: ordersCount,
       avgTicket,
       profit,
-      avgDeliveryMinutes: deliveryDurations.length > 0 ? deliveryDurations.reduce((sum, value) => sum + value, 0) / deliveryDurations.length : 0,
-      pendingToPreparingMinutes: pendingToPreparing.length > 0 ? Math.round(pendingToPreparing.reduce((sum, value) => sum + value, 0) / pendingToPreparing.length) : null,
-      preparingToDeliveringMinutes: preparingToDelivering.length > 0 ? Math.round(preparingToDelivering.reduce((sum, value) => sum + value, 0) / preparingToDelivering.length) : null,
-      deliveringToDeliveredMinutes: deliveringToDelivered.length > 0 ? Math.round(deliveringToDelivered.reduce((sum, value) => sum + value, 0) / deliveringToDelivered.length) : null,
+      avgDeliveryMinutes: 0,
+      pendingToPreparingMinutes: null,
+      preparingToDeliveringMinutes: null,
+      deliveringToDeliveredMinutes: null,
       topProducts,
     });
     setLoading(false);
@@ -220,6 +224,8 @@ export function useStats(period: Period) {
     salesByDay,
     paymentBreakdown,
     hourlyPeak,
+    statusBreakdown,
+    beachRevenue,
     summary,
     loading,
     error,
