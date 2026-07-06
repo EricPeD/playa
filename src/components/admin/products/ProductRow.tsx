@@ -19,7 +19,7 @@ export default function ProductRow({ product, onToggleActive, onAdjustStock, isL
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={S.productName}>{product.name}</p>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', color: '#666', fontSize: 12 }}>
-          <span>{product.sku ?? '—'}</span>
+          <span>{product.brand ?? '—'}</span>
           <span>·</span>
           <span>{product.category_name}</span>
           <span>·</span>

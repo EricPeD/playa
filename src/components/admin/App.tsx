@@ -13,13 +13,13 @@ import Products from '@/components/admin/products/Products';
 import Stats from '@/components/admin/stats/Stats';
 import S from '@/components/admin/styles';
 
-const TABS = [
+const TABS: { key: string; label: string }[] = [
   { key: 'dashboard', label: 'Inicio' },
   { key: 'orders', label: 'Pedidos' },
   { key: 'operator', label: 'Repartidor' },
   { key: 'products', label: 'Productos' },
   { key: 'stats', label: 'Estadísticas' },
-] as const;
+];
 
 type TabKey = (typeof TABS)[number]['key'];
 
@@ -28,7 +28,7 @@ export default function AdminApp() {
   const [statsPeriod, setStatsPeriod] = useState<'hoy' | 'semana' | 'mes'>('hoy');
   const { orders, loading: ordersLoading, error: ordersError, advanceOrder, cancelOrder, refresh: refreshOrders } = useOrders();
   const { products, categories, loading: productsLoading, error: productsError, toggleActive, adjustStock } = useProducts();
-  const { salesByDay, paymentBreakdown, hourlyPeak, summary, loading: statsLoading, error: statsError, refresh: refreshStats } = useStats(statsPeriod);
+  const { salesByDay, paymentBreakdown, hourlyPeak, statusBreakdown, beachRevenue, summary, loading: statsLoading, error: statsError, refresh: refreshStats } = useStats(statsPeriod);
 
   const pendingCount = useMemo(() => orders.filter((order) => order.status === 'pending').length, [orders]);
 
@@ -53,7 +53,7 @@ export default function AdminApp() {
 
       {!isLoading && !errorMessage && (
         <>
-          {tab === 'dashboard' && <Dashboard orders={orders} stats={summary} salesByDay={salesByDay} />}
+          {tab === 'dashboard' && <Dashboard orders={orders} stats={summary} salesByDay={salesByDay} hourlyPeak={hourlyPeak} />}
           {tab === 'orders' && (
             <Orders orders={orders} onAdvance={advanceOrder} onCancel={cancelOrder} refreshOrders={refreshOrders} />
           )}
@@ -68,6 +68,8 @@ export default function AdminApp() {
               salesByDay={salesByDay}
               paymentBreakdown={paymentBreakdown}
               hourlyPeak={hourlyPeak}
+              statusBreakdown={statusBreakdown}
+              beachRevenue={beachRevenue}
               summary={summary}
             />
           )}

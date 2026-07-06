@@ -1,18 +1,16 @@
-import type { SalesByDay } from '@/hooks/useStats';
+import type { HourlyPeak, SalesByDay } from '@/hooks/useStats';
 import type { OrderWithDetails } from '@/hooks/useOrders';
 import { formatCurrency } from '@/utils/format';
-import { STATUS_CONFIG } from '@/utils/statusConfig';
 import S from '@/components/admin/styles';
 
 type DashboardProps = {
   orders: OrderWithDetails[];
   stats: { total: number; orders: number; avgTicket: number; profit: number };
   salesByDay: SalesByDay[];
+  hourlyPeak: HourlyPeak[];
 };
 
-const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-
-export default function Dashboard({ orders, stats, salesByDay }: DashboardProps) {
+export default function Dashboard({ orders, stats, salesByDay, hourlyPeak }: DashboardProps) {
   const pending = orders.filter((o) => o.status === 'pending').length;
   const preparing = orders.filter((o) => o.status === 'preparing').length;
   const delivering = orders.filter((o) => o.status === 'delivering').length;
@@ -21,6 +19,7 @@ export default function Dashboard({ orders, stats, salesByDay }: DashboardProps)
   const todaySales = stats.total;
   const avgTicket = stats.avgTicket;
   const maxSales = Math.max(1, ...salesByDay.map((item) => item.total));
+  const maxPeakCount = Math.max(1, ...hourlyPeak.map((item) => item.count));
 
   return (
     <div style={S.section}>
@@ -75,20 +74,21 @@ export default function Dashboard({ orders, stats, salesByDay }: DashboardProps)
 
       <div style={S.card}>
         <p style={S.sectionTitle}>Hora pico</p>
-        {orders
-          .filter((o) => o.status === 'delivered')
-          .slice(0, 5)
-          .map((order) => (
-            <div key={order.id} style={{ marginBottom: 10 }}>
+        {hourlyPeak.length === 0 ? (
+          <p style={{ color: '#888', marginTop: 6 }}>No hay datos de horas pico disponibles.</p>
+        ) : (
+          hourlyPeak.slice(0, 5).map((item) => (
+            <div key={item.hour} style={{ marginBottom: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 12, color: '#888' }}>{new Date(order.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#F1F0ED' }}>{order.items.length} productos</span>
+                <span style={{ fontSize: 12, color: '#888' }}>{item.hour}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#F1F0ED' }}>{item.count} pedidos</span>
               </div>
               <div style={S.progressBar()}>
-                <div style={S.progressFill(60)} />
+                <div style={{ ...S.progressFill((item.count / maxPeakCount) * 100), width: `${(item.count / maxPeakCount) * 100}%` }} />
               </div>
             </div>
-          ))}
+          ))
+        )}
       </div>
     </div>
   );
