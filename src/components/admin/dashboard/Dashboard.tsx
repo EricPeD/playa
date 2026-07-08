@@ -24,15 +24,6 @@ export default function Dashboard({ orders, stats, salesByDay, hourlyPeak, publi
   const maxPeakCount = Math.max(1, ...hourlyPeak.map((item) => item.count));
 
   return (
-<<<<<<< HEAD
-    <div style={S.section as React.CSSProperties}>
-      <p style={S.sectionTitle as React.CSSProperties}>Resumen del día</p>
-      <div style={S.metricGrid as React.CSSProperties}>
-        <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#F59E0B')}>
-          <p style={S.metricLabel as React.CSSProperties}>Pendientes</p>
-          <p style={S.metricValue as React.CSSProperties}>{pending}</p>
-          <p style={S.metricSub as React.CSSProperties}>esperando</p>
-=======
     <div style={S.section}>
       <div style={{ ...S.card, marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
@@ -66,7 +57,6 @@ export default function Dashboard({ orders, stats, salesByDay, hourlyPeak, publi
           <p style={S.metricLabel}>Pendientes</p>
           <p style={S.metricValue}>{pending}</p>
           <p style={S.metricSub}>esperando</p>
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
         </div>
         <div style={(S.metricCard as (accent: string) => React.CSSProperties)('#3B82F6')}>
           <p style={S.metricLabel as React.CSSProperties}>Preparando</p>
@@ -110,15 +100,6 @@ export default function Dashboard({ orders, stats, salesByDay, hourlyPeak, publi
         </div>
       </div>
 
-<<<<<<< HEAD
-      <div style={S.card as React.CSSProperties}>
-        <p style={S.sectionTitle as React.CSSProperties}>Hora pico</p>
-        {orders
-          .filter((o) => o.status === 'delivered')
-          .slice(0, 5)
-          .map((order) => (
-            <div key={order.id} style={{ marginBottom: 10 }}>
-=======
       <div style={S.card}>
         <p style={S.sectionTitle}>Hora pico</p>
         {hourlyPeak.length === 0 ? (
@@ -126,18 +107,12 @@ export default function Dashboard({ orders, stats, salesByDay, hourlyPeak, publi
         ) : (
           hourlyPeak.slice(0, 5).map((item) => (
             <div key={item.hour} style={{ marginBottom: 10 }}>
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 12, color: '#888' }}>{item.hour}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#F1F0ED' }}>{item.count} pedidos</span>
               </div>
-<<<<<<< HEAD
-              <div style={(S.progressBar as (pct?: number) => React.CSSProperties)()}>
-                <div style={(S.progressFill as (pct: number) => React.CSSProperties)(60)} />
-=======
               <div style={S.progressBar()}>
                 <div style={{ ...S.progressFill((item.count / maxPeakCount) * 100), width: `${(item.count / maxPeakCount) * 100}%` }} />
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
               </div>
             </div>
           ))

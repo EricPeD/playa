@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 import Image from 'next/image';
-import {IcoPlus, IcoBox, IcoMinus } from"./Icons";
-import {Product} from"@/lib/types";
-import {BadgePill} from "./BadgePill";
-=======
 import { IcoPlus, IcoBox, IcoMinus } from './Icons';
 import type { Product } from '@/lib/types';
 import { BadgePill } from './BadgePill';
@@ -15,7 +10,6 @@ function normalizeBadge(badge?: string | null): BadgeType | null {
   if (!badge) return null;
   return BADGE_TYPES.find((type) => type === badge.toLowerCase()) ?? null;
 }
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
 
 export function ProductCard({
   product,
@@ -55,11 +49,8 @@ export function ProductCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <p className="text-[14px] font-semibold text-[#1A1A1A] leading-snug">{product.name}</p>
-<<<<<<< HEAD
           {product.badge && <BadgePill type={product.badge as 'nuevo' | 'oferta' | 'top'} />}
-=======
-          {product.badge && <BadgePill type={normalizeBadge(product.badge) ?? 'nuevo'} />}
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
+
         </div>
         {product.brand && (
           <p className="text-[11px] text-[#9B9589] mt-0.5">{product.brand}</p>

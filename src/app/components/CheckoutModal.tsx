@@ -156,10 +156,7 @@ export function CheckoutModal({
     ? {
         clientSecret,
         appearance: { theme: 'stripe' as const },
-<<<<<<< HEAD
-=======
         paymentElement: paymentElementOptions,
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
       }
     : undefined;
 

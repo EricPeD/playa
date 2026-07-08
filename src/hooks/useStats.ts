@@ -140,34 +140,8 @@ export function useStats(period: Period) {
       const statusKey = (order.status ?? 'pending').toLowerCase();
       statusMap[statusKey] = (statusMap[statusKey] ?? 0) + 1;
 
-<<<<<<< HEAD
-    const deliveryDurations: number[] = [];
-    const pendingToPreparing: number[] = [];
-    const preparingToDelivering: number[] = [];
-    const deliveringToDelivered: number[] = [];
-
-    deliveredOrders.forEach((order: any) => {
-      const rows = trackingByOrder[order.id] ?? [];
-      const createdAt = new Date(order.created_at).getTime();
-      const byStatus = Object.fromEntries(rows.map((row: { status: string; created_at: string }) => [row.status, new Date(row.created_at).getTime()]));
-      if (byStatus.delivered) {
-        const diff = Math.max(0, Math.round((byStatus.delivered - createdAt) / 60000));
-        deliveryDurations.push(diff);
-      }
-      if (byStatus.preparing) {
-        const diff = Math.max(0, Math.round((byStatus.preparing - createdAt) / 60000));
-        pendingToPreparing.push(diff);
-      }
-      if (byStatus.preparing && byStatus.delivering) {
-        preparingToDelivering.push(Math.max(0, Math.round((byStatus.delivering - byStatus.preparing) / 60000)));
-      }
-      if (byStatus.delivering && byStatus.delivered) {
-        deliveringToDelivered.push(Math.max(0, Math.round((byStatus.delivered - byStatus.delivering) / 60000)));
-      }
-=======
       const beachKey = (order.beach_location ?? 'Sin ubicación').trim() || 'Sin ubicación';
       beachMap[beachKey] = (beachMap[beachKey] ?? 0) + parseFloat(order.total ?? 0);
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
     });
 
     const itemRows = Array.isArray(itemsResult.data) ? itemsResult.data : [];

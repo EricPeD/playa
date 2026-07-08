@@ -14,11 +14,7 @@ import Products from '@/components/admin/products/Products';
 import Stats from '@/components/admin/stats/Stats';
 import S from '@/components/admin/styles';
 
-<<<<<<< HEAD
 const TABS: Array<{ key: string; label: string }> = [
-=======
-const TABS: { key: string; label: string }[] = [
->>>>>>> 527ddd70ff713fb1a0e94f3176226b1b72c645e3
   { key: 'dashboard', label: 'Inicio' },
   { key: 'orders', label: 'Pedidos' },
   { key: 'operator', label: 'Repartidor' },
