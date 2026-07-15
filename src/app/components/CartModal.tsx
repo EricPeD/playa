@@ -1,4 +1,4 @@
-import { IcoPhone, IcoBack, IcoCart, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin } from './Icons';
+import { IcoPhone, IcoBack, IcoCart, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin, IcoTruck } from './Icons';
 import { CartItem, Product, CreateOrderPayload } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { COUNTRY_CODES } from '@/lib/country';
@@ -7,6 +7,9 @@ import { CheckoutModal } from './CheckoutModal';
 import { submitOrder } from '@/lib/orders';
 import { getUiText, type SupportedLanguage } from '@/lib/i18n';
 import { clearCartStorage } from '@/lib/cart';
+
+const FREE_SHIPPING_THRESHOLD = 8;
+const SHIPPING_COST = 2.20;
 
 // ── CartModal ──────────────────────────────────────────────────────────────────
 export function CartModal({
@@ -32,7 +35,13 @@ export function CartModal({
   onRemove: (id: number) => void;
   language: SupportedLanguage;
 }) {
-  const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+  const subtotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+  const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const shippingFee = qualifiesForFreeShipping ? 0 : SHIPPING_COST;
+  const total = subtotal + shippingFee;
+  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingProgressPct = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+
   const t = (key: string) => getUiText(language, key);
 
   const [phone, setPhone]                 = useState('');
@@ -48,8 +57,8 @@ export function CartModal({
   const canOrder = gpsEnabled && phoneConfirmed && !submitting;
 
   console.log(
-    `[CartModal] Render — ${cart.length} items, total=${total.toFixed(2)}, gps=${gpsEnabled}, ` +
-    `phone=${phoneConfirmed ? country.code + phone : 'none'}, gpsData=${gpsEnabled ? JSON.stringify(gpsData) : 'none'}`
+    `[CartModal] Render — ${cart.length} items, subtotal=${subtotal.toFixed(2)}, shipping=${shippingFee.toFixed(2)}, ` +
+    `total=${total.toFixed(2)}, gps=${gpsEnabled}, phone=${phoneConfirmed ? country.code + phone : 'none'}, gpsData=${gpsEnabled ? JSON.stringify(gpsData) : 'none'}`
   );
 
   useEffect(() => {
@@ -82,7 +91,7 @@ export function CartModal({
       countryCode: country.code,
       gpsData,
       notes: notes.trim() || null,
-      deliveryFee: 0,
+      deliveryFee: shippingFee,
     };
 
     console.log('[CartModal] 🛒 Enviando pedido…', payload);
@@ -135,6 +144,36 @@ export function CartModal({
             </div>
           ) : (
             <>
+              {/* ── Free shipping banner ── */}
+              <div className={`mt-3 mb-1 rounded-2xl p-3.5 border transition-colors ${
+                qualifiesForFreeShipping
+                  ? 'bg-[#F0FFF4] border-[#BBF7D0]'
+                  : 'bg-[#F5F2ED] border-[#E8E4DC]'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                    qualifiesForFreeShipping ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-white text-[#9B9589]'
+                  }`}>
+                    {qualifiesForFreeShipping ? <IcoCheck size={16} /> : <IcoTruck size={16} />}
+                  </div>
+                  <p className={`text-[12.5px] font-semibold leading-snug ${
+                    qualifiesForFreeShipping ? 'text-[#16A34A]' : 'text-[#1A1A1A]'
+                  }`}>
+                    {qualifiesForFreeShipping
+                      ? t('cartModalFreeShippingUnlocked')
+                      : t('cartModalFreeShippingProgress').replace('{amount}', remainingForFreeShipping.toFixed(2))}
+                  </p>
+                </div>
+                <div className="mt-2.5 h-1.5 rounded-full bg-white/70 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      qualifiesForFreeShipping ? 'bg-[#16A34A]' : 'bg-[#1A1A1A]'
+                    }`}
+                    style={{ width: `${freeShippingProgressPct}%` }}
+                  />
+                </div>
+              </div>
+
               <div className="mt-2">
                 {cart.map(({ product, quantity }) => (
                   <div key={product.id} className="flex items-center gap-3 py-3 border-b border-[#F0EDE8] last:border-0">
@@ -165,10 +204,24 @@ export function CartModal({
                   </div>
                 ))}
 
-                {/* Total */}
-                <div className="flex justify-between items-center py-4">
-                  <p className="text-[14px] text-[#9B9589]">{t('cartModalTotal')}</p>
-                  <p className="text-[24px] font-black text-[#1A1A1A] tabular-nums">{total.toFixed(2)} €</p>
+                {/* Subtotal / Shipping / Total */}
+                <div className="py-3 space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[13px] text-[#9B9589]">{t('cartModalSubtotalLabel')}</p>
+                    <p className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{subtotal.toFixed(2)} €</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[13px] text-[#9B9589]">{t('cartModalShippingLabel')}</p>
+                    {qualifiesForFreeShipping ? (
+                      <p className="text-[13px] font-semibold text-[#16A34A]">{t('cartModalShippingFree')}</p>
+                    ) : (
+                      <p className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{shippingFee.toFixed(2)} €</p>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center pt-1.5">
+                    <p className="text-[14px] text-[#9B9589]">{t('cartModalTotal')}</p>
+                    <p className="text-[24px] font-black text-[#1A1A1A] tabular-nums">{total.toFixed(2)} €</p>
+                  </div>
                 </div>
               </div>
 
@@ -218,7 +271,7 @@ export function CartModal({
                 </div>
                 {phoneConfirmed
                   ? <span className="text-[#16A34A] shrink-0"><IcoCheck size={18} /></span>
-                  : <span className="text-[12px] font-bold text-[#D97706] shrink-0">Añadir</span>
+                  : <span className="text-[12px] font-bold text-[#D97706] shrink-0">{t('cartModalPhoneButtonDefault')}</span>
                 }
               </button>
 
@@ -251,7 +304,7 @@ export function CartModal({
                 </div>
                 {gpsEnabled
                   ? <span className="text-[#16A34A] shrink-0"><IcoCheck size={18} /></span>
-                  : <span className="text-[12px] font-bold text-[#D97706] shrink-0">Activar</span>
+                  : <span className="text-[12px] font-bold text-[#D97706] shrink-0">{t('cartModalGpsButtonDefault')}</span>
                 }
               </button>
             </>

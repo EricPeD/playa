@@ -137,6 +137,7 @@ export default function CategoryModal({
                     quantity={getQty(p.id)}
                     onAdd={() => onAdd(p)}
                     onRemove={() => onRemove(p.id)}
+                    lang={language}
                   />
                 ))}
               </>
@@ -155,6 +156,7 @@ export default function CategoryModal({
                     quantity={getQty(p.id)}
                     onAdd={() => onAdd(p)}
                     onRemove={() => onRemove(p.id)}
+                    lang={language}
                   />
                 ))}
               </>

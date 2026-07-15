@@ -28,6 +28,10 @@ export default function OrderSuccessPage({ searchParams }: OrderSuccessPageProps
 
   const t = useMemo(() => (key: string) => getUiText(language, key), [language]);
 
+  const trackingHref = orderId
+    ? `/tracking?orderId=${encodeURIComponent(orderId)}&lang=${language}`
+    : `/tracking?lang=${language}`;
+
   return (
     <main className="min-h-screen bg-[#FAFAF8] text-[#1A1A1A] px-6 py-10 flex items-center justify-center">
       <div className="w-full max-w-2xl rounded-[32px] border border-[#E0DDD8] bg-white p-8 shadow-[0_30px_80px_rgba(26,26,26,0.08)]">
@@ -58,13 +62,32 @@ export default function OrderSuccessPage({ searchParams }: OrderSuccessPageProps
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-          <Link href="/" className="inline-flex w-full items-center justify-center rounded-2xl bg-[#1A1A1A] px-6 py-4 text-white transition hover:opacity-90 sm:w-auto">
-            {t('successBack')}
+        <div className="mt-8 flex flex-col gap-3">
+          <Link
+            href={trackingHref}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1A1A1A] px-6 py-4 text-white transition hover:opacity-90"
+          >
+            <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+              <path
+                d="M10 3.5C6 3.5 3 10 3 10C3 10 6 16.5 10 16.5C14 16.5 17 10 17 10C17 10 14 3.5 10 3.5Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="10" cy="10" r="2.25" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+            {t('successTrackButton')}
           </Link>
-          <Link href="/" className="inline-flex w-full items-center justify-center rounded-2xl border border-[#E0DDD8] bg-white px-6 py-4 text-[#1A1A1A] transition hover:bg-[#FAFAF8] sm:w-auto">
-            {t('successMoreProducts')}
-          </Link>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+            <Link
+              href="/"
+              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#E0DDD8] bg-white px-6 py-4 text-[#1A1A1A] transition hover:bg-[#FAFAF8] sm:w-auto"
+            >
+              {t('successBack')}
+            </Link>
+          </div>
         </div>
       </div>
     </main>

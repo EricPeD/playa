@@ -19,7 +19,16 @@ export function IcoCheck(props: IconProps) {
   const { size = 20, ...rest } = props;
   return <CheckCircle2 {...withSize(size, rest)} />;
 }
-
+export function IcoTruck({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="6" width="14" height="11" rx="1" />
+      <path d="M15 9h4l3 3v5h-7z" />
+      <circle cx="6" cy="19" r="1.8" fill="currentColor" stroke="none" />
+      <circle cx="17.5" cy="19" r="1.8" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 export function IcoPin(props: IconProps) {
   const { size = 20, ...rest } = props;
   return <MapPin {...withSize(size, rest)} />;
