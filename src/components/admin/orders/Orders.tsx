@@ -16,17 +16,22 @@ export default function Orders({ orders, onAdvance, onCancel }: OrdersProps) {
   const [filter, setFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null);
 
+  // Solo mostramos pedidos que ya fueron pagados/confirmados
+  const paidOrders = useMemo(
+    () => orders.filter((o) => o.status !== 'pending'),
+    [orders]
+  );
+
   const counts = useMemo(() => ({
-    pending: orders.filter((o) => o.status === 'pending').length,
-    preparing: orders.filter((o) => o.status === 'preparing').length,
-    delivering: orders.filter((o) => o.status === 'delivering').length,
-    delivered: orders.filter((o) => o.status === 'delivered').length,
-  }), [orders]);
+    preparing: paidOrders.filter((o) => o.status === 'preparing').length,
+    delivering: paidOrders.filter((o) => o.status === 'delivering').length,
+    delivered: paidOrders.filter((o) => o.status === 'delivered').length,
+  }), [paidOrders]);
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return orders;
-    return orders.filter((o) => o.status === filter);
-  }, [filter, orders]);
+    if (filter === 'all') return paidOrders;
+    return paidOrders.filter((o) => o.status === filter);
+  }, [filter, paidOrders]);
 
   return (
     <div style={S.section as React.CSSProperties}>
