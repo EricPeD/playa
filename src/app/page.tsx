@@ -350,6 +350,58 @@ export default function HomePage() {
             <p className="text-[11px] text-[#C0BDB8] mt-2">{t('homeEmptyConsole')}</p>
           </div>
         )}
+        
+          {/* Tracking */}
+{/* Tracking */}
+{/* Tracking */}
+<div className="mt-5">
+  <Link
+    href="/tracking"
+    className="group relative flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-br from-white to-[#FAF8F5] border border-[#EDEBE6] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] overflow-hidden active:scale-[0.98] transition-all"
+  >
+    {/* Detalle decorativo de fondo */}
+    <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-[#F5F2ED] opacity-60" />
+
+    <div className="relative flex items-center gap-3.5">
+      <div className="w-[52px] h-[52px] rounded-2xl bg-[#1A1A1A] flex items-center justify-center shrink-0 shadow-sm">
+        {/* Icono de mapa con pin */}
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M9 4l-6 2.5v13.5l6-2.5 6 2.5 6-2.5V3.5L15 6"
+            stroke="#F5F2ED"
+            strokeWidth={1.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={0.55}
+          />
+          <path d="M9 4v13.5M15 6v13.5" stroke="#F5F2ED" strokeWidth={1.6} opacity={0.55} />
+          <circle cx="14.5" cy="9.5" r="4" fill="#F5F2ED" />
+          <circle cx="14.5" cy="9.5" r="1.4" fill="#1A1A1A" />
+        </svg>
+      </div>
+      <div className="relative">
+        <p className="text-[15px] font-bold text-[#1A1A1A] leading-tight">
+          {t('trackingTitle')}
+        </p>
+        <p className="text-[12px] text-[#9B9589] mt-0.5">
+          {t('trackingSubtitle')}
+        </p>
+      </div>
+    </div>
+
+    <div className="relative w-8 h-8 rounded-full bg-white border border-[#EDEBE6] flex items-center justify-center shrink-0 group-active:scale-90 transition-transform">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#1A1A1A]">
+        <path
+          d="M9 6l6 6-6 6"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  </Link>
+</div>
       </main>
 
       {/* ── Toast pedido OK ── */}
@@ -380,14 +432,6 @@ export default function HomePage() {
             <span>{gpsEnabled ? t('homeGpsButtonActive') : t('homeGpsButtonInactive')}</span>
           </button>
 
-          {/* Tracking */}
-          <Link
-            href="/tracking"
-            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#F5F2ED] text-[#1A1A1A] text-[13px] font-semibold transition-all active:scale-95"
-          >
-            <IcoBox size={17} />
-            <span>Tracking</span>
-          </Link>
 
           {/* Cart */}
           <button

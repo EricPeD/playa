@@ -163,6 +163,7 @@ export default function CategoryModal({
             )}
           </div>
         )}
+        
       </div>
 
       {/* Sticky CTA si hay items en carrito */}

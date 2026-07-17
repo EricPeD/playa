@@ -162,9 +162,7 @@ export default function TrackingPage() {
               <Link href="/" className="inline-flex flex-1 items-center justify-center rounded-2xl bg-[#1A1A1A] px-4 py-3 text-sm font-semibold text-white">
                 Volver al inicio
               </Link>
-              <a href="https://wa.me/34600000000" className="inline-flex flex-1 items-center justify-center rounded-2xl border border-[#E0DDD8] bg-white px-4 py-3 text-sm font-semibold text-[#1A1A1A]">
-                Contactar
-              </a>
+             
             </div>
           </div>
         )}

@@ -149,6 +149,8 @@ export const UI_TEXT: Record<SupportedLanguage, Record<string, string>> = {
     cartModalShippingFree: 'Kostenlos',
     cartModalFreeShippingProgress: 'Füge noch {amount} € hinzu für kostenlosen Versand',
     cartModalFreeShippingUnlocked: 'Kostenloser Versand freigeschaltet!',
+    trackingTitle: "Sendungsverfolgung",
+    trackingSubtitle: "Verfolge deine Bestellungen in Echtzeit"
   },
   en: {
     appBrand: 'Playa Delivery',
@@ -281,6 +283,8 @@ export const UI_TEXT: Record<SupportedLanguage, Record<string, string>> = {
     cartModalShippingFree: 'Free',
     cartModalFreeShippingProgress: 'Add {amount} € more to get free shipping',
     cartModalFreeShippingUnlocked: 'Free shipping unlocked!',
+    trackingTitle: "Tracking",
+    trackingSubtitle: "Track your orders in real time"
   },
   es: {
     appBrand: 'Playa Delivery',
@@ -420,6 +424,8 @@ export const UI_TEXT: Record<SupportedLanguage, Record<string, string>> = {
     cartModalShippingFree: 'Gratis',
     cartModalFreeShippingProgress: 'Añade {amount} € más y consigue envío gratis',
     cartModalFreeShippingUnlocked: '¡Envío gratis conseguido!',
+    trackingTitle: "Tracking",
+    trackingSubtitle: "Sigue tus pedidos en tiempo real"
   },
   it: {
     appBrand: 'Playa Delivery',
@@ -559,6 +565,8 @@ export const UI_TEXT: Record<SupportedLanguage, Record<string, string>> = {
     cartModalShippingFree: 'Gratuita',
     cartModalFreeShippingProgress: 'Aggiungi ancora {amount} € per la spedizione gratuita',
     cartModalFreeShippingUnlocked: 'Spedizione gratuita sbloccata!',
+    trackingTitle: "Tracking",
+    trackingSubtitle: "Segui i tuoi ordini in tempo reale"
   },
   fr: {
     appBrand: 'Playa Delivery',
@@ -698,6 +706,8 @@ export const UI_TEXT: Record<SupportedLanguage, Record<string, string>> = {
     cartModalShippingFree: 'Gratuite',
     cartModalFreeShippingProgress: 'Ajoutez encore {amount} € pour la livraison gratuite',
     cartModalFreeShippingUnlocked: 'Livraison gratuite débloquée !',
+    trackingTitle: "Suivi",
+    trackingSubtitle: "Suivez vos commandes en temps réel"
   },
 };
 
