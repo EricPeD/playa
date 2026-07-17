@@ -57,7 +57,7 @@ export function useOrders() {
       .select(
         `id, customer_id, status, beach_location, notes, subtotal, delivery_fee, total, paid_at, payment_method, created_at, customers(name, phone), order_items(id, product_id, quantity, unit_price, subtotal, products(name)))`
       )
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
       setError(error.message);

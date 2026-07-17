@@ -8,6 +8,7 @@ import { fetchCategories, requestGPS } from '@/lib/helpers';
 import { CART_STORAGE_KEY, clearCartStorage, readCartFromStorage, writeCartToStorage } from '@/lib/cart';
 import { IcoBox, IcoCart, IcoCheck, IcoPin, IcoPinOff } from '@/app/components/Icons';
 import CategoryModal from '@/app/components/CategoryModal';
+import Link from 'next/link';
 import { CAT_COLORS, CAT_ICONS } from './components/colors';
 import { CartModal } from './components/CartModal';
 import {
@@ -378,6 +379,15 @@ export default function HomePage() {
             {gpsEnabled ? <IcoPin size={17} /> : <IcoPinOff size={17} />}
             <span>{gpsEnabled ? t('homeGpsButtonActive') : t('homeGpsButtonInactive')}</span>
           </button>
+
+          {/* Tracking */}
+          <Link
+            href="/tracking"
+            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-[#F5F2ED] text-[#1A1A1A] text-[13px] font-semibold transition-all active:scale-95"
+          >
+            <IcoBox size={17} />
+            <span>Tracking</span>
+          </Link>
 
           {/* Cart */}
           <button
