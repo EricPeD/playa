@@ -87,3 +87,20 @@ export interface CreateOrderResult {
   orderId?: number;
   error?: string;
 }
+
+export interface PurchaseItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface CreateOrderResult {
+  success: boolean;
+  orderId?: number;
+  error?: string;
+
+  total?: number;
+  currency?: string;
+  items?: PurchaseItem[];
+}

@@ -1,5 +1,5 @@
 'use client';
-
+import { addToCart as metaAddToCart } from '@/lib/metaPixel';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Category, Product, CartItem } from '@/lib/types';
@@ -145,17 +145,42 @@ export default function HomePage() {
   }, []);
 
   // Cart actions
-  const addToCart = useCallback((product: Product) => {
-    console.log('[Cart] addToCart:', product.name, `(id=${product.id})`);
-    setCart((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id);
-      const next = existing
-        ? prev.map((i) => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i)
-        : [...prev, { product, quantity: 1 }];
-      console.log('[Cart] nuevo estado:', next.map((i) => `${i.product.name}x${i.quantity}`).join(', '));
-      return next;
-    });
-  }, []);
+ const addToCart = useCallback((product: Product) => {
+  console.log('[Cart] addToCart:', product.name, `(id=${product.id})`);
+
+  setCart((prev) => {
+    const existing = prev.find((i) => i.product.id === product.id);
+
+    const next = existing
+      ? prev.map((i) =>
+          i.product.id === product.id
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        )
+      : [...prev, { product, quantity: 1 }];
+
+    console.log(
+      '[Cart] nuevo estado:',
+      next.map((i) => `${i.product.name}x${i.quantity}`).join(', ')
+    );
+
+    return next;
+  });
+
+  // Evento Meta
+  metaAddToCart({
+    value: Number(product.price),
+    currency: 'EUR',
+    items: [
+      {
+        id: String(product.id),
+        name: product.name,
+        quantity: 1,
+        price: Number(product.price),
+      },
+    ],
+  });
+}, []);
 
   const removeFromCart = useCallback((productId: number) => {
     console.log('[Cart] removeFromCart id:', productId);

@@ -1,3 +1,4 @@
+import { initiateCheckout } from '@/lib/metaPixel';
 import { IcoPhone, IcoBack, IcoCart, IcoPinOff, IcoPlus, IcoMinus, IcoCheck, IcoPin, IcoTruck } from './Icons';
 import { CartItem, Product, CreateOrderPayload } from '@/lib/types';
 import { useState, useEffect } from 'react';
@@ -79,22 +80,25 @@ export function CartModal({
   }, [onClose, phoneModal]);
 
   // ── create order ─────────────────────────────────────────────────────────────
-  async function handleCreateOrder() {
-    if (!canOrder) {
-      console.warn('[CartModal] Condiciones no cumplidas — abortando', { gpsEnabled, phoneConfirmed });
-      return;
-    }
+async function handleCreateOrder() {
+  if (!canOrder) {
+    console.warn('[CartModal] Condiciones no cumplidas — abortando', {
+      gpsEnabled,
+      phoneConfirmed,
+    });
+    return;
+  }
 
-    const payload: CreateOrderPayload = {
-      cart,
-      phone: phone || null,
-      countryCode: country.code,
-      gpsData,
-      notes: notes.trim() || null,
-      deliveryFee: shippingFee,
-    };
+  const payload: CreateOrderPayload = {
+    cart,
+    phone: phone || null,
+    countryCode: country.code,
+    gpsData,
+    notes: notes.trim() || null,
+    deliveryFee: shippingFee,
+  };
 
-    console.log('[CartModal] 🛒 Enviando pedido…', payload);
+  console.log('[CartModal] 🛒 Enviando pedido…', payload);
     setSubmitting(true);
     setSubmitError(null);
 
@@ -103,14 +107,28 @@ export function CartModal({
     setSubmitting(false);
 
     if (result.success && result.orderId) {
+
+      initiateCheckout({
+        value: total,
+        currency: "EUR",
+        items: cart.map(item => ({
+          id: String(item.product.id),
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+      });
+
       console.log('[CartModal] ✅ Pedido creado con id:', result.orderId);
+
       setCheckoutOrderId(result.orderId);
       setShowCheckout(true);
+
     } else {
       console.error('[CartModal] ❌ Error al crear pedido:', result.error);
       setSubmitError(result.error ?? 'Error desconocido');
     }
-  }
+}
 
   // ── render ────────────────────────────────────────────────────────────────────
   return (

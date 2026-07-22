@@ -197,3 +197,22 @@ export async function submitOrder(
     return { success: false, error: message };
   }
 }
+
+export async function getOrderForPixel(orderId: number) {
+  return await supabase
+    .from("orders")
+    .select(`
+      id,
+      total,
+      order_items(
+        quantity,
+        unit_price,
+        products(
+          id,
+          name
+        )
+      )
+    `)
+    .eq("id", orderId)
+    .single();
+}

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_LANGUAGE, getStoredLanguage, getUiText, normalizeLanguage, type SupportedLanguage } from '@/lib/i18n';
 import { clearCartStorage } from '@/lib/cart';
+import { purchase } from '@/lib/metaPixel';
 
 interface OrderSuccessPageProps {
   searchParams: {
