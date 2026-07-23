@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_LANGUAGE, getStoredLanguage, getUiText, normalizeLanguage, type SupportedLanguage } from '@/lib/i18n';
 import { clearCartStorage } from '@/lib/cart';
 import { purchase } from '@/lib/metaPixel';
+import { getOrderForPixel } from '@/lib/orders';
 
 interface OrderSuccessPageProps {
   searchParams: {
@@ -26,6 +27,30 @@ export default function OrderSuccessPage({ searchParams }: OrderSuccessPageProps
     setLanguage(fromUrl === DEFAULT_LANGUAGE && !fromStorage ? fromUrl : (fromStorage ?? fromUrl));
     clearCartStorage();
   }, [searchParams.lang]);
+
+  useEffect(() => {
+    if (!success || !orderId) return;
+
+    async function sendPurchase() {
+      const order = await getOrderForPixel(Number(orderId));
+
+      if (!order) return;
+
+      purchase({
+        orderId: String(order.id),
+        value: Number(order.total),
+        currency: 'EUR',
+        items: order.order_items.map((i) => ({
+          id: i.products.id,
+          name: i.products.name,
+          quantity: i.quantity,
+          price: Number(i.unit_price),
+        })),
+      });
+    }
+
+    sendPurchase();
+  }, [success, orderId]);
 
   const t = useMemo(() => (key: string) => getUiText(language, key), [language]);
 

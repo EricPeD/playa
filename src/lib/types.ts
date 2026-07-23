@@ -82,12 +82,6 @@ export interface CreateOrderPayload {
   deliveryFee?: number;
 }
 
-export interface CreateOrderResult {
-  success: boolean;
-  orderId?: number;
-  error?: string;
-}
-
 export interface PurchaseItem {
   id: string;
   name: string;

@@ -163,44 +163,106 @@ export async function submitOrder(
   payload: CreateOrderPayload,
 ): Promise<CreateOrderResult> {
   console.group('[submitOrder] ── Inicio flujo completo ──');
-  console.log('Payload:', JSON.stringify({
-    items: payload.cart.map(i => ({ id: i.product.id, name: i.product.name, qty: i.quantity })),
-    phone: payload.phone ? `${payload.countryCode} ${payload.phone}` : null,
-    gps: payload.gpsData,
-    notes: payload.notes,
-  }, null, 2));
+
+  console.log(
+    'Payload:',
+    JSON.stringify(
+      {
+        items: payload.cart.map((i) => ({
+          id: i.product.id,
+          name: i.product.name,
+          qty: i.quantity,
+        })),
+        phone: payload.phone
+          ? `${payload.countryCode} ${payload.phone}`
+          : null,
+        gps: payload.gpsData,
+        notes: payload.notes,
+      },
+      null,
+      2,
+    ),
+  );
 
   try {
     // 1. Customer
-    const customer = await upsertCustomer(payload.phone, payload.countryCode);
-    if (!customer) throw new Error('No se pudo crear el cliente');
+    const customer = await upsertCustomer(
+      payload.phone,
+      payload.countryCode,
+    );
 
-    // 2. Order header
+    if (!customer) {
+      throw new Error('No se pudo crear el cliente');
+    }
+
+    // 2. Order
     const order = await createOrder(customer.id, payload);
-    if (!order) throw new Error('No se pudo crear el pedido');
+
+    if (!order) {
+      throw new Error('No se pudo crear el pedido');
+    }
 
     // 3. Order items
     const items = await createOrderItems(order.id, payload);
-    if (!items) throw new Error('No se pudieron insertar los items');
 
-    // 4. Initial tracking
-    await createInitialTracking(order.id); // no bloqueante si falla
+    if (!items) {
+      throw new Error('No se pudieron insertar los items');
+    }
+
+    // 4. Tracking
+    await createInitialTracking(order.id);
 
     console.log('[submitOrder] ✅ Flujo completo. orderId:', order.id);
     console.groupEnd();
-    return { success: true, orderId: order.id };
 
+    return {
+      success: true,
+      orderId: order.id,
+
+      total: order.total,
+      currency: 'EUR',
+
+      items: payload.cart.map((item) => ({
+        id: String(item.product.id),
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price,
+      })),
+    };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Error desconocido';
+    const message =
+      err instanceof Error ? err.message : 'Error desconocido';
+
     console.error('[submitOrder] ❌ Error:', message);
     console.groupEnd();
-    return { success: false, error: message };
+
+    return {
+      success: false,
+      error: message,
+    };
   }
 }
 
-export async function getOrderForPixel(orderId: number) {
-  return await supabase
-    .from("orders")
+// ── 6. Pedido formateado para el Pixel de Meta ────────────────────────────────
+export type PixelOrder = {
+  id: number;
+  total: number;
+  order_items: {
+    quantity: number;
+    unit_price: number;
+    products: {
+      id: number;
+      name: string;
+    };
+  }[];
+};
+
+export async function getOrderForPixel(orderId: number): Promise<PixelOrder | null> {
+  console.group('[getOrderForPixel]');
+  console.log('orderId:', orderId);
+
+  const { data, error } = await supabase
+    .from('orders')
     .select(`
       id,
       total,
@@ -213,6 +275,16 @@ export async function getOrderForPixel(orderId: number) {
         )
       )
     `)
-    .eq("id", orderId)
+    .eq('id', orderId)
     .single();
+
+  if (error) {
+    console.error('[getOrderForPixel] Error:', error.message);
+    console.groupEnd();
+    return null;
+  }
+
+  console.log('[getOrderForPixel] Pedido obtenido, id:', data.id);
+  console.groupEnd();
+  return data as PixelOrder;
 }

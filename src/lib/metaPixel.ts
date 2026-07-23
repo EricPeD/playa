@@ -111,9 +111,14 @@ export const purchase = ({
   currency = "EUR",
 }: {
   orderId: string;
-  items: CartItem[];
   value: number;
   currency?: string;
+  items: {
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
 }) => {
   fbq("track", "Purchase", {
     currency,
