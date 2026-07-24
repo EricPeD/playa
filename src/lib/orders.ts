@@ -286,5 +286,5 @@ export async function getOrderForPixel(orderId: number): Promise<PixelOrder | nu
 
   console.log('[getOrderForPixel] Pedido obtenido, id:', data.id);
   console.groupEnd();
-  return data as PixelOrder;
+  return data as unknown as PixelOrder;
 }
